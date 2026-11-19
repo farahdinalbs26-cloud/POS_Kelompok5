@@ -1,0 +1,26 @@
+tabel database dirancang sendiri, hanya pakai kelas jar bapak aja, programnya hanya satu utuh, hanya pakai satu program atau form saja, satu program utama banyak fungsi nya,  tambahkan beberapa form, new projek nya saja
+desain pakai menu bar, menu item, menu 
+fungsi form nya bebas ajaa, boleh dari menu atau ribbon, 1 projek isinya banyak form, bukan dipisah-pisah
+
+pakai kelas pos.java untuk menampilkan detail transaksi dan dll
+tambahkan projek.db, tambahkan bagian file pom.xml di dependencies
+cek MySQL versi nya, untuk menguji apakah connect atau belum pakai try{ 
+file pom.xml tambahkan group id, artifact id, version di dependency dependencies 
+dari database, masuk ke produk dulu, tampilkan di form produk dulu  
+pada form produk menampilkan tabel pada database MySQL , apabila menambah produk pada form, maka akan bertambah di tabel di form nya, tambahkan primary key ,
+dilarang buat satu page satu produk , atau satu" program 
+ada form produk dan pada masuk ada form tampil produk , ideal form produk ditampilkan di view 
+pakai javasql . * aja lebih ideal
+database connection konfigurasi database, ada host, db, user , pass dan digabung akan sebuah page yaitu url 
+pada bagian db itu nama pada database di MySQL nya , perlu 4 string, kalo final string hanya satu nilai tidak bisa dihapus 
+untuk connection pakai getconnection di bagian form produk, 
+
+
+kalo di form tampil produk pakai status get status 
+kalo di form produk itu pakai insert 
+
+set text id , nama, harga beli, harga jual, stock  dari kelas form tampilproduk 
+pada values tanda tanya ? ? ? ? itu diisi pada preparedstatement 
+
+
+

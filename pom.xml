@@ -5,9 +5,21 @@
     <artifactId>POS_Kelompok5</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
+    <dependencies>
+        <dependency>
+            <groupId>com.unri.pbo</groupId>
+            <artifactId>ProjectPOS</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.33</version>
+        </dependency>
+    </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>24</maven.compiler.release>
+        <maven.compiler.release>27</maven.compiler.release>
         <exec.mainClass>com.mycompany.pos_kelompok5.POS_Kelompok5</exec.mainClass>
     </properties>
 </project>
