@@ -23,10 +23,9 @@ public class dashboard extends javax.swing.JFrame {
         buttonGroup1.add(btnRiwayat);
         
         panelKonten.setLayout(new java.awt.CardLayout());
-        panelKonten.add(new PanelProduk(), "pageProduk");
+        panelKonten.add(new PanelPenjualan(), "pagePenjualan");
         panelKonten.add(new PanelProduk(), "pageProduk");
         panelKonten.add(new PanelKasir(), "pageKasir");
-        panelKonten.add(buatHalamanSementara("Halaman Penjualan"), "pagePenjualan");
         panelKonten.add(buatHalamanSementara("Halaman Pembelian"), "pagePembelian");
         panelKonten.add(buatHalamanSementara("Halaman Restock"), "pageRestock");
         panelKonten.add(buatHalamanSementara("Halaman Riwayat"), "pageRiwayat");
