@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package com.unri.pbo;
-
+import java.awt.CardLayout;
 /**
  *
  * @author Strgirlezz
@@ -13,6 +13,7 @@ public class dashboard extends javax.swing.JFrame {
 
     public dashboard() {
         initComponents();
+        panelKonten.setLayout(new java.awt.CardLayout());
         
         buttonGroup1.add(btnProduk);
         buttonGroup1.add(btnKasir);
@@ -21,7 +22,9 @@ public class dashboard extends javax.swing.JFrame {
         buttonGroup1.add(btnRestock);
         buttonGroup1.add(btnRiwayat);
         
-        panelKonten.add(buatHalamanSementara("Halaman Produk"), "pageProduk");
+        panelKonten.setLayout(new java.awt.CardLayout());
+        panelKonten.add(new PanelProduk(), "pageProduk");
+        panelKonten.add(new PanelProduk(), "pageProduk");
         panelKonten.add(new PanelKasir(), "pageKasir");
         panelKonten.add(buatHalamanSementara("Halaman Penjualan"), "pagePenjualan");
         panelKonten.add(buatHalamanSementara("Halaman Pembelian"), "pagePembelian");
@@ -252,7 +255,7 @@ public class dashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_btnKasirActionPerformed
 
     private void btnProdukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProdukActionPerformed
-        gantiHalaman("pageProduk", btnProduk);
+gantiHalaman("pageProduk", btnProduk);                                    
     }//GEN-LAST:event_btnProdukActionPerformed
 
     /**
