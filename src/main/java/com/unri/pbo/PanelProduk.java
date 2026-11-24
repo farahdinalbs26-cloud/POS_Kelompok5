@@ -61,8 +61,6 @@ public class PanelProduk extends javax.swing.JPanel {
 
         jTextField1.addActionListener(this::jTextField1ActionPerformed);
 
-        jButton1.setBackground(new java.awt.Color(211, 222, 229));
-        jButton1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jButton1.setText("Simpan");
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -76,18 +74,12 @@ public class PanelProduk extends javax.swing.JPanel {
 
         jLabel6.setText("Kategori");
 
-        jButton2.setBackground(new java.awt.Color(211, 222, 229));
-        jButton2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jButton2.setText("Ubah");
         jButton2.addActionListener(this::jButton2ActionPerformed);
 
-        jButton3.setBackground(new java.awt.Color(211, 222, 229));
-        jButton3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jButton3.setText("Hapus");
         jButton3.addActionListener(this::jButton3ActionPerformed);
 
-        jButton4.setBackground(new java.awt.Color(211, 222, 229));
-        jButton4.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jButton4.setText("Bersihkan");
         jButton4.addActionListener(this::jButton4ActionPerformed);
 
@@ -118,7 +110,7 @@ public class PanelProduk extends javax.swing.JPanel {
         jTable1.setShowVerticalLines(true);
         jScrollPane1.setViewportView(jTable1);
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Pulpen", "Pensil", "Buku Tulis", "Penghapus", "Penggaris", "Spidol" }));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
