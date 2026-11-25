@@ -1,4 +1,4 @@
-package com.unri.pbo;
+package com.unri.pbo.config;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseConnection {
-
     private static final String HOST = "localhost:3306";
     private static final String DB   = "db_pos_kelompok5";   
     private static final String USER = "root";
