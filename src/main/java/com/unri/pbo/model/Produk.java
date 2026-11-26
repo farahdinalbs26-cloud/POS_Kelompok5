@@ -1,28 +1,61 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package com.unri.pbo.model;
-import java.math.BigDecimal;
-/**
- *
- * @author Strgirlezz
- */
-    public class Produk extends com.unri.pbo.Produk {
 
-    public Produk(String id, String nama, BigDecimal hargaBeli, BigDecimal hargaJual, int stok) {
-        super(id, nama, hargaBeli, hargaJual, stok);
+package com.unri.pbo.model;
+
+import java.math.BigDecimal;
+
+public class Produk {
+
+    private String idProduk;
+    private String namaProduk;
+    private BigDecimal hargaBeli;
+    private BigDecimal hargaJual;
+    private int stok;
+
+    public Produk(String id, String nama,
+                  BigDecimal hargaBeli,
+                  BigDecimal hargaJual,
+                  int stok) {
+
+        this.idProduk = id;
+        this.namaProduk = nama;
+        this.hargaBeli = hargaBeli;
+        this.hargaJual = hargaJual;
+        this.stok = stok;
+    }
+
+    public String getIdProduk() {
+        return idProduk;
+    }
+
+    public String getNamaProduk() {
+        return namaProduk;
+    }
+
+    public BigDecimal getHargaBeli() {
+        return hargaBeli;
+    }
+
+    public BigDecimal getHargaJual() {
+        return hargaJual;
+    }
+
+    public int getStok() {
+        return stok;
     }
 
     public String getStatusStok() {
-        int s = getStok();
-        if (s <= 0) return "HABIS";
-        if (s <= 5) return "MENIPIS";
-        return "TERSEDIA";
+        if (stok <= 0) {
+            return "HABIS";
+        } else if (stok < 5) {
+            return "MENIPIS";
+        } else {
+            return "TERSEDIA";
+        }
     }
 
     @Override
     public String toString() {
-        return getIdProduk() + " - " + getNamaProduk() + " (stok " + getStok() + ")";
+        return idProduk + " - " + namaProduk
+                + " (stok " + stok + ")";
     }
 }
