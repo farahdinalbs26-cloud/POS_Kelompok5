@@ -11,6 +11,9 @@ import java.awt.CardLayout;
 public class dashboard extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(dashboard.class.getName());
 
+
+    private PanelRiwayatTransaksi panelRiwayat;
+
     public dashboard() {
         initComponents();
         panelKonten.setLayout(new java.awt.CardLayout());
@@ -22,13 +25,14 @@ public class dashboard extends javax.swing.JFrame {
         buttonGroup1.add(btnRestock);
         buttonGroup1.add(btnRiwayat);
         
-        panelKonten.setLayout(new java.awt.CardLayout());
-        panelKonten.add(new PanelPenjualan(), "pagePenjualan");
+        panelRiwayat = new PanelRiwayatTransaksi();
+        
         panelKonten.add(new PanelProduk(), "pageProduk");
         panelKonten.add(new PanelKasir(), "pageKasir");
+        panelKonten.add(new PanelPenjualan(), "pagePenjualan");
         panelKonten.add(buatHalamanSementara("Halaman Pembelian"), "pagePembelian");
         panelKonten.add(buatHalamanSementara("Halaman Restock"), "pageRestock");
-        panelKonten.add(buatHalamanSementara("Halaman Riwayat"), "pageRiwayat");
+        panelKonten.add(panelRiwayat, "pageRiwayat"); // Menggantikan buatHalamanSementara("Halaman Riwayat")
         
         this.setSize(900, 620);
         this.setLocationRelativeTo(null);
@@ -172,7 +176,7 @@ public class dashboard extends javax.swing.JFrame {
 
         jLabel1.setFont(new java.awt.Font("Yu Gothic UI Semibold", 1, 18)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setText("ATK Pena Mas");
+        jLabel1.setText("ATK Prima Jaya");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -217,6 +221,7 @@ public class dashboard extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnRiwayatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRiwayatActionPerformed
+    panelRiwayat.loadDataRiwayat(); 
         gantiHalaman("pageRiwayat", btnRiwayat);
     }//GEN-LAST:event_btnRiwayatActionPerformed
 
