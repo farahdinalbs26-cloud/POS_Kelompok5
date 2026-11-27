@@ -13,6 +13,7 @@ public class dashboard extends javax.swing.JFrame {
 
 
     private PanelRiwayatTransaksi panelRiwayat;
+    private PanelPembelian panelPembelian;
 
     public dashboard() {
         initComponents();
@@ -26,11 +27,12 @@ public class dashboard extends javax.swing.JFrame {
         buttonGroup1.add(btnRiwayat);
         
         panelRiwayat = new PanelRiwayatTransaksi();
+        panelPembelian = new PanelPembelian();
         
         panelKonten.add(new PanelProduk(), "pageProduk");
         panelKonten.add(new PanelKasir(), "pageKasir");
         panelKonten.add(new PanelPenjualan(), "pagePenjualan");
-        panelKonten.add(buatHalamanSementara("Halaman Pembelian"), "pagePembelian");
+        panelKonten.add(panelPembelian, "pagePembelian");
         panelKonten.add(buatHalamanSementara("Halaman Restock"), "pageRestock");
         panelKonten.add(panelRiwayat, "pageRiwayat"); // Menggantikan buatHalamanSementara("Halaman Riwayat")
         
