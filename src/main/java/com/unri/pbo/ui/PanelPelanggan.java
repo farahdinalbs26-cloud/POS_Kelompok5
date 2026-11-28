@@ -96,10 +96,11 @@ public class PanelPelanggan extends javax.swing.JPanel {
 
         setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        lblJudul.setFont(new java.awt.Font("Yu Gothic UI Semibold", 1, 12)); // NOI18N
-        lblJudul.setText("Data Pelanggan");
-        add(lblJudul, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 16, -1, -1));
+        lblJudul.setFont(new java.awt.Font("Yu Gothic UI Semibold", 1, 18)); // NOI18N
+        lblJudul.setText("DATA PELANGGAN");
+        add(lblJudul, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, -1, -1));
 
+        lblKode.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblKode.setText("Kode Pelanggan");
         add(lblKode, new org.netbeans.lib.awtextra.AbsoluteConstraints(15, 44, -1, -1));
 
@@ -112,6 +113,7 @@ public class PanelPelanggan extends javax.swing.JPanel {
         });
         add(txtKode, new org.netbeans.lib.awtextra.AbsoluteConstraints(132, 44, 196, -1));
 
+        lblNama.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblNama.setText("Instansi");
         add(lblNama, new org.netbeans.lib.awtextra.AbsoluteConstraints(15, 78, -1, -1));
 
@@ -127,21 +129,24 @@ public class PanelPelanggan extends javax.swing.JPanel {
                 txtTeleponActionPerformed(evt);
             }
         });
-        add(txtTelepon, new org.netbeans.lib.awtextra.AbsoluteConstraints(534, 44, 168, -1));
+        add(txtTelepon, new org.netbeans.lib.awtextra.AbsoluteConstraints(490, 40, 168, -1));
 
         txtEmail.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtEmailActionPerformed(evt);
             }
         });
-        add(txtEmail, new org.netbeans.lib.awtextra.AbsoluteConstraints(534, 86, 168, -1));
+        add(txtEmail, new org.netbeans.lib.awtextra.AbsoluteConstraints(490, 80, 168, -1));
 
+        lblTelepon.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblTelepon.setText("No. Telepon");
-        add(lblTelepon, new org.netbeans.lib.awtextra.AbsoluteConstraints(421, 47, -1, -1));
+        add(lblTelepon, new org.netbeans.lib.awtextra.AbsoluteConstraints(400, 40, -1, -1));
 
+        lblEmail.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblEmail.setText("Email");
-        add(lblEmail, new org.netbeans.lib.awtextra.AbsoluteConstraints(421, 81, 43, -1));
+        add(lblEmail, new org.netbeans.lib.awtextra.AbsoluteConstraints(400, 80, 43, -1));
 
+        lblAlamat.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblAlamat.setText("Alamat Instansi");
         add(lblAlamat, new org.netbeans.lib.awtextra.AbsoluteConstraints(15, 117, -1, -1));
 
@@ -152,41 +157,49 @@ public class PanelPelanggan extends javax.swing.JPanel {
         });
         add(txtAlamat, new org.netbeans.lib.awtextra.AbsoluteConstraints(132, 114, 196, -1));
 
-        btnSimpan.setBackground(new java.awt.Color(211, 222, 229));
+        btnSimpan.setBackground(new java.awt.Color(0, 102, 51));
+        btnSimpan.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnSimpan.setForeground(new java.awt.Color(255, 255, 255));
         btnSimpan.setText("Simpan");
         btnSimpan.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSimpanActionPerformed(evt);
             }
         });
-        add(btnSimpan, new org.netbeans.lib.awtextra.AbsoluteConstraints(15, 167, -1, -1));
+        add(btnSimpan, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 170, -1, -1));
 
-        btnUbah.setBackground(new java.awt.Color(211, 222, 229));
+        btnUbah.setBackground(new java.awt.Color(0, 102, 51));
+        btnUbah.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnUbah.setForeground(new java.awt.Color(255, 255, 255));
         btnUbah.setText("Ubah");
         btnUbah.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnUbahActionPerformed(evt);
             }
         });
-        add(btnUbah, new org.netbeans.lib.awtextra.AbsoluteConstraints(151, 167, -1, -1));
+        add(btnUbah, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 170, -1, -1));
 
-        btnHapus.setBackground(new java.awt.Color(211, 222, 229));
+        btnHapus.setBackground(new java.awt.Color(0, 102, 51));
+        btnHapus.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnHapus.setForeground(new java.awt.Color(255, 255, 255));
         btnHapus.setText("Hapus");
         btnHapus.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnHapusActionPerformed(evt);
             }
         });
-        add(btnHapus, new org.netbeans.lib.awtextra.AbsoluteConstraints(282, 167, -1, -1));
+        add(btnHapus, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 170, -1, -1));
 
-        btnBersihkan.setBackground(new java.awt.Color(211, 222, 229));
+        btnBersihkan.setBackground(new java.awt.Color(0, 102, 51));
+        btnBersihkan.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnBersihkan.setForeground(new java.awt.Color(255, 255, 255));
         btnBersihkan.setText("Bersihkan");
         btnBersihkan.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnBersihkanActionPerformed(evt);
             }
         });
-        add(btnBersihkan, new org.netbeans.lib.awtextra.AbsoluteConstraints(421, 167, -1, -1));
+        add(btnBersihkan, new org.netbeans.lib.awtextra.AbsoluteConstraints(560, 170, -1, -1));
 
         tblPelanggan.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -207,18 +220,15 @@ public class PanelPelanggan extends javax.swing.JPanel {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 711, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 582, Short.MAX_VALUE)
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(36, Short.MAX_VALUE)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(20, 20, 20))
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
         );
 
-        add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 225, -1, -1));
+        add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 230, -1, -1));
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSimpanActionPerformed

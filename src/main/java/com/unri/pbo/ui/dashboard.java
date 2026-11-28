@@ -20,6 +20,7 @@ public class dashboard extends javax.swing.JFrame {
     private PanelPenjualan panelPenjualan;
     private PanelSupplier panelSupplier;
     private PanelRestock panelRestock;
+    private PanelBeranda panelBeranda;
 
    public dashboard() {
         initComponents();
@@ -32,6 +33,7 @@ public class dashboard extends javax.swing.JFrame {
         panelRiwayat = new PanelRiwayatTransaksi();
         panelPelanggan = new PanelPelanggan();
         panelSupplier = new PanelSupplier();
+        panelBeranda = new PanelBeranda();
         
        
 
@@ -44,16 +46,16 @@ public class dashboard extends javax.swing.JFrame {
         getContentPane().add(panelKonten, java.awt.BorderLayout.CENTER);
 
         // Kelompokkan tombol navigasi
-        buttonGroup1.add(btnProduk);
+        buttonGroup1.add(btnBeranda);
         buttonGroup1.add(btnProduk1);
         buttonGroup1.add(btnKasir);
         buttonGroup1.add(btnPenjualan);
         buttonGroup1.add(btnPembelian);
         buttonGroup1.add(btnRestock);
         buttonGroup1.add(btnRiwayat);
+        
 
-        // Tampilkan Beranda sebagai halaman awal
-        tampilkanPanel(buatHalamanSementara("Selamat Datang di POS ATK Prima Jaya"), btnProduk);
+        tampilkanPanel(new PanelBeranda(), btnBeranda);
 
         this.setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
    }
@@ -80,7 +82,7 @@ private javax.swing.JScrollPane buatScroll(java.awt.Component comp) {
         panelKonten.repaint();
 
         javax.swing.JToggleButton[] semuaTombol = {
-            btnProduk, btnProduk1, btnKasir, btnPenjualan, btnPembelian, btnRestock, btnRiwayat
+            btnBeranda, btnProduk1, btnKasir, btnPenjualan, btnPembelian, btnRestock, btnRiwayat
         };
         for (javax.swing.JToggleButton btn : semuaTombol) {
             if (btn == tombolAktif) {
@@ -104,7 +106,7 @@ private javax.swing.JScrollPane buatScroll(java.awt.Component comp) {
         jPanel1 = new javax.swing.JPanel();
         PanelUtama = new javax.swing.JPanel();
         btnRiwayat = new javax.swing.JToggleButton();
-        btnProduk = new javax.swing.JToggleButton();
+        btnBeranda = new javax.swing.JToggleButton();
         btnPembelian = new javax.swing.JToggleButton();
         btnRestock = new javax.swing.JToggleButton();
         btnProduk1 = new javax.swing.JToggleButton();
@@ -112,6 +114,7 @@ private javax.swing.JScrollPane buatScroll(java.awt.Component comp) {
         btnKasir = new javax.swing.JToggleButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jMenuBar2 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
@@ -136,12 +139,12 @@ private javax.swing.JScrollPane buatScroll(java.awt.Component comp) {
             }
         });
 
-        btnProduk.setBackground(new java.awt.Color(240, 138, 36));
-        btnProduk.setForeground(new java.awt.Color(21, 94, 73));
-        btnProduk.setText("Beranda");
-        btnProduk.addActionListener(new java.awt.event.ActionListener() {
+        btnBeranda.setBackground(new java.awt.Color(240, 138, 36));
+        btnBeranda.setForeground(new java.awt.Color(21, 94, 73));
+        btnBeranda.setText("Beranda");
+        btnBeranda.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnProdukActionPerformed(evt);
+                btnBerandaActionPerformed(evt);
             }
         });
 
@@ -191,21 +194,28 @@ private javax.swing.JScrollPane buatScroll(java.awt.Component comp) {
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setText("ATK Prima Jaya");
 
+        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel2.setText("Alat tulis kantor lengkap, harga bersahabat");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(23, 23, 23)
-                .addComponent(jLabel1)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel1))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(17, 17, 17)
+                .addGap(11, 11, 11)
                 .addComponent(jLabel1)
-                .addContainerGap(28, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel2)
+                .addContainerGap(22, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout PanelUtamaLayout = new javax.swing.GroupLayout(PanelUtama);
@@ -214,7 +224,7 @@ private javax.swing.JScrollPane buatScroll(java.awt.Component comp) {
             PanelUtamaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(PanelUtamaLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(btnProduk, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnBeranda, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnProduk1, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -235,7 +245,7 @@ private javax.swing.JScrollPane buatScroll(java.awt.Component comp) {
             .addGroup(PanelUtamaLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(PanelUtamaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnProduk, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnBeranda, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnRiwayat, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnPembelian, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnRestock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -262,7 +272,7 @@ private javax.swing.JScrollPane buatScroll(java.awt.Component comp) {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(PanelUtama, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -275,7 +285,7 @@ private javax.swing.JScrollPane buatScroll(java.awt.Component comp) {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(PanelUtama, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(45, Short.MAX_VALUE))
+                .addContainerGap(125, Short.MAX_VALUE))
         );
 
         jMenu1.setText("Master Data");
@@ -325,7 +335,7 @@ private javax.swing.JScrollPane buatScroll(java.awt.Component comp) {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 146, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 56, Short.MAX_VALUE)
                 .addComponent(panelKonten, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -360,9 +370,9 @@ tampilkanPanel(panelRestock, null);
    
     }//GEN-LAST:event_btnKasirActionPerformed
 
-    private void btnProdukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProdukActionPerformed
-tampilkanPanel(buatHalamanSementara("Selamat Datang di POS ATK Prima Jaya"), btnProduk);                               
-    }//GEN-LAST:event_btnProdukActionPerformed
+    private void btnBerandaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBerandaActionPerformed
+    tampilkanPanel(new PanelBeranda(), btnBeranda);         
+    }//GEN-LAST:event_btnBerandaActionPerformed
 
     private void btnProduk1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProduk1ActionPerformed
                         tampilkanPanel(panelProduk, btnProduk1);
@@ -416,15 +426,16 @@ tampilkanPanel(panelSupplier, null);
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel PanelUtama;
+    private javax.swing.JToggleButton btnBeranda;
     private javax.swing.JToggleButton btnKasir;
     private javax.swing.JToggleButton btnPembelian;
     private javax.swing.JToggleButton btnPenjualan;
-    private javax.swing.JToggleButton btnProduk;
     private javax.swing.JToggleButton btnProduk1;
     private javax.swing.JToggleButton btnRestock;
     private javax.swing.JToggleButton btnRiwayat;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
