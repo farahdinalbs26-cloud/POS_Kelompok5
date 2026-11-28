@@ -4,54 +4,82 @@
  */
 package com.unri.pbo.ui;
 import com.unri.pbo.config.DatabaseConnection;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
-/**
- *
- * @author Strgirlezz
- */
+
 
 public class PanelRiwayatTransaksi extends javax.swing.JPanel {
 
-    public PanelRiwayatTransaksi() {
+  public PanelRiwayatTransaksi() {
         initComponents();
+        setupEvents();
         loadDataRiwayat();
     }
 
+    private void setupEvents() {
+        // Pencarian real-time saat mengetik di Cari Transaksi
+        jTextField1.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                loadDataRiwayat();
+            }
+        });
+
+        // Klik 2x pada baris tabel untuk melihat detail transaksi
+        jTable1.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    lihatDetail();
+                }
+            }
+        });
+    }
+
     public void loadDataRiwayat() {
-        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+       DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         model.setRowCount(0);
 
-        String filterJenis = jComboBox1.getSelectedItem().toString();
         String keyword = "%" + jTextField1.getText().trim() + "%";
 
-        String sql = "SELECT id_transaksi, tanggal_waktu, jenis, pelanggan_supplier, total " +
-                     "FROM riwayat_transaksi " +
-                     "WHERE (id_transaksi LIKE ? OR pelanggan_supplier LIKE ?) " +
-                     (filterJenis.equals("Semua Transaksi") ? "" : "AND jenis = ? ") +
-                     "ORDER BY tanggal_waktu DESC";
+        String sql = "SELECT * FROM (" +
+                     "  SELECT id_penjualan AS kode, tanggal, 'Penjualan' AS jenis, " +
+                     "         kode_pelanggan AS keterangan, total " +
+                     "  FROM penjualan " +
+                     "  UNION ALL " +
+                     "  SELECT id_pembelian AS kode, tanggal, 'Restock' AS jenis, " +
+                     "         id_supplier AS keterangan, total " +
+                     "  FROM pembelian " +
+                     ") AS gabungan " +
+                     "WHERE kode LIKE ? OR tanggal LIKE ? OR jenis LIKE ? OR keterangan LIKE ? " +
+                     "ORDER BY tanggal DESC, kode DESC";
 
         try (Connection c = DatabaseConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
 
             ps.setString(1, keyword);
             ps.setString(2, keyword);
-            if (!filterJenis.equals("Semua Transaksi")) {
-                ps.setString(3, filterJenis);
-            }
+            ps.setString(3, keyword);
+            ps.setString(4, keyword);
 
             try (ResultSet rs = ps.executeQuery()) {
+                int no = 1;
                 while (rs.next()) {
                     model.addRow(new Object[]{
-                        rs.getString("id_transaksi"),
-                        rs.getString("tanggal_waktu"),
+                        no++,
+                        rs.getString("kode"),
+                        rs.getString("tanggal"),
                         rs.getString("jenis"),
-                        rs.getString("pelanggan_supplier"),
-                        rs.getBigDecimal("total").toBigInteger()
+                        rs.getString("keterangan"),
+                        String.format("%.0f", rs.getDouble("total"))
                     });
                 }
             }
@@ -62,16 +90,14 @@ public class PanelRiwayatTransaksi extends javax.swing.JPanel {
 
     private void lihatDetail() {
         int row = jTable1.getSelectedRow();
-        if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Pilih salah satu transaksi di tabel terlebih dahulu!");
-            return;
-        }
+        if (row == -1) return;
+
         JOptionPane.showMessageDialog(this,
-            "ID Transaksi : " + jTable1.getValueAt(row, 0) + "\n" +
-            "Tanggal      : " + jTable1.getValueAt(row, 1) + "\n" +
-            "Jenis        : " + jTable1.getValueAt(row, 2) + "\n" +
-            "Keterangan   : " + jTable1.getValueAt(row, 3) + "\n" +
-            "Total        : Rp " + jTable1.getValueAt(row, 4),
+            "Kode Transaksi : " + jTable1.getValueAt(row, 1) + "\n" +
+            "Tanggal        : " + jTable1.getValueAt(row, 2) + "\n" +
+            "Jenis          : " + jTable1.getValueAt(row, 3) + "\n" +
+            "Keterangan     : " + jTable1.getValueAt(row, 4) + "\n" +
+            "Total          : Rp " + jTable1.getValueAt(row, 5),
             "Detail Transaksi",
             JOptionPane.INFORMATION_MESSAGE
         );
@@ -86,27 +112,17 @@ public class PanelRiwayatTransaksi extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
         jLabel3 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
         jScrollBar1 = new javax.swing.JScrollBar();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        jButton1 = new javax.swing.JButton();
 
         setBackground(new java.awt.Color(248, 250, 252));
 
         jLabel1.setText("Riwayat Transaksi ATK Prima Jaya");
-
-        jLabel2.setText("Jenis Transaksi");
-
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        jComboBox1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jComboBox1ActionPerformed(evt);
-            }
-        });
 
         jLabel3.setText("Cari Transaksi");
 
@@ -118,18 +134,18 @@ public class PanelRiwayatTransaksi extends javax.swing.JPanel {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null}
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null}
             },
             new String [] {
-                "ID Transaksi", "Tanggal & Waktu", "Jenis ", "Pelanggan / Supplier", "Total"
+                "No", "Kode Transaksi", "Tanggal ", "Jenis", "Keterangan", "Total"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false
+                false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -146,9 +162,9 @@ public class PanelRiwayatTransaksi extends javax.swing.JPanel {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addGap(31, 31, 31)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(25, 25, 25)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 518, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(67, Short.MAX_VALUE))
         );
@@ -162,6 +178,14 @@ public class PanelRiwayatTransaksi extends javax.swing.JPanel {
                 .addContainerGap(128, Short.MAX_VALUE))
         );
 
+        jButton1.setBackground(new java.awt.Color(0, 153, 102));
+        jButton1.setText("Reset");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -169,48 +193,48 @@ public class PanelRiwayatTransaksi extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 258, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(65, 65, 65)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 258, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(20, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
+                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 229, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton1)
+                        .addGap(75, 75, 75))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2)
                     .addComponent(jLabel3)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(7, 7, 7)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(32, 32, 32))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jComboBox1ActionPerformed
-
     private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
-        // TODO add your handling code here:
+    loadDataRiwayat();
     }//GEN-LAST:event_jTextField1ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    jTextField1.setText("");
+        loadDataRiwayat();
+    }//GEN-LAST:event_jButton1ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollBar jScrollBar1;

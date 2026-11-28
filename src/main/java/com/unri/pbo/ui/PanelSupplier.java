@@ -1,29 +1,135 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
 package com.unri.pbo.ui;
-
+import com.unri.pbo.config.DatabaseConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import javax.swing.JOptionPane;
-
+import javax.swing.table.DefaultTableModel;
 /**
  *
- * @author FARRAS ZAHY
+ * @author Strgirlezz
  */
-public class PanelSupplier extends javax.swing.JFrame {
-    
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(PanelSupplier.class.getName());
-        private int row;
+public class PanelSupplier extends javax.swing.JPanel {
 
     /**
      * Creates new form PanelSupplier
      */
-    public PanelSupplier() {
+public PanelSupplier() {
         initComponents();
+        jTextField1.setEditable(false);
+        jTextField1.setBackground(java.awt.Color.WHITE);
+        tampilData();
+        generateIdSupplier();
+
+        // Klik baris tabel -> pindahkan data ke form input
+        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int row = jTable1.getSelectedRow();
+                if (row != -1) {
+                    jTextField1.setText(jTable1.getValueAt(row, 0).toString());
+                    jTextField2.setText(jTable1.getValueAt(row, 1).toString());
+                    jTextField3.setText(jTable1.getValueAt(row, 2) != null ? jTable1.getValueAt(row, 2).toString() : "");
+                    jTextField4.setText(jTable1.getValueAt(row, 3) != null ? jTable1.getValueAt(row, 3).toString() : "");
+                }
+            }
+        });
     }
+
+    private void tampilData() {
+       DefaultTableModel model = new DefaultTableModel(
+            new String[]{"ID Supplier", "Nama Perusahaan", "No.Telepon", "Alamat"}, 0
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        String sql = "SELECT id_supplier, nama_perusahaan, no_telepon, alamat FROM supplier ORDER BY id_supplier ASC";
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            while (rs.next()) {
+                model.addRow(new Object[]{
+                    rs.getString("id_supplier"),
+                    rs.getString("nama_perusahaan"),
+                    rs.getString("no_telepon"),
+                    rs.getString("alamat")
+                });
+            }
+            jTable1.setModel(model);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Gagal memuat data supplier: " + e.getMessage());
+        }
+    }
+
+    private void generateIdSupplier() {
+        String sql = "SELECT id_supplier FROM supplier ORDER BY id_supplier DESC LIMIT 1";
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            if (rs.next() && rs.getString("id_supplier") != null) {
+                String kodeTerakhir = rs.getString("id_supplier");
+                int angka = Integer.parseInt(kodeTerakhir.replaceAll("[^0-9]", "")) + 1;
+                jTextField1.setText(String.format("SUP%03d", angka));
+            } else {
+                jTextField1.setText("SUP001");
+            }
+        } catch (Exception e) {
+            jTextField1.setText("SUP001");
+        }
+    }
+
+    private void bersihkanForm() {
+        jTextField2.setText("");
+        jTextField3.setText("");
+        jTextField4.setText("");
+        jTable1.clearSelection();
+        generateIdSupplier();
+        jTextField2.requestFocus();
+    }
+
+    private boolean validasiInput() {
+        if (jTextField2.getText().trim().isEmpty() || jTextField3.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nama Perusahaan dan No.Telepon wajib diisi!");
+            return false;
+        }
+        return true;
+    }
+
+    private void simpanDataBaru() {
+       String sql = "INSERT INTO supplier (id_supplier, nama, nama_perusahaan, no_telepon, alamat) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, jTextField1.getText().trim());
+            ps.setString(2, jTextField2.getText().trim()); // isi kolom nama sama dengan nama perusahaan
+            ps.setString(3, jTextField2.getText().trim()); // nama_perusahaan
+            ps.setString(4, jTextField3.getText().trim()); // no_telepon
+            ps.setString(5, jTextField4.getText().trim()); // alamat
+
+            ps.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Data supplier berhasil disimpan!");
+            tampilData();
+            bersihkanForm();
+        } catch (SQLException e) {
+            if (e.getErrorCode() == 1062) {
+                JOptionPane.showMessageDialog(this, "ID Supplier sudah terdaftar!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Gagal menyimpan: " + e.getMessage());
+            }
+        }
+    }
+        
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -34,343 +140,246 @@ public class PanelSupplier extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        lblJudul = new javax.swing.JLabel();
-        lblKode = new javax.swing.JLabel();
-        txtKode = new javax.swing.JTextField();
-        lblTelepon = new javax.swing.JLabel();
-        lblNama = new javax.swing.JLabel();
-        txtTelepon = new javax.swing.JTextField();
-        txtNama = new javax.swing.JTextField();
-        lblEmail = new javax.swing.JLabel();
-        txtEmail = new javax.swing.JTextField();
-        txtAlamat = new javax.swing.JTextField();
-        lblAlamat = new javax.swing.JLabel();
-        btnSimpan = new javax.swing.JButton();
-        btnUbah = new javax.swing.JButton();
-        btnHapus = new javax.swing.JButton();
-        btnBersihkan = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        jTextField1 = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        jTextField2 = new javax.swing.JTextField();
+        jTextField3 = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jTextField4 = new javax.swing.JTextField();
+        jButton3 = new javax.swing.JButton();
+        jButton4 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
+        jButton5 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        tblSupplier = new javax.swing.JTable();
+        jTable1 = new javax.swing.JTable();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        jPanel1.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
-        lblJudul.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        lblJudul.setText("Data Supplier");
-        getContentPane().add(lblJudul, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 14, -1, -1));
+        jLabel2.setText("ID Supplier");
 
-        lblKode.setText("Kode Supplier");
-        getContentPane().add(lblKode, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 56, -1, -1));
+        jLabel3.setText("Nama Perusahaan");
 
-        txtKode.addActionListener(new java.awt.event.ActionListener() {
+        jLabel4.setText("No.Telepon");
+
+        jLabel5.setText("Alamat");
+
+        jButton3.setBackground(new java.awt.Color(0, 153, 102));
+        jButton3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jButton3.setText("Simpan");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtKodeActionPerformed(evt);
+                jButton3ActionPerformed(evt);
             }
         });
-        getContentPane().add(txtKode, new org.netbeans.lib.awtextra.AbsoluteConstraints(123, 53, 71, -1));
 
-        lblTelepon.setText("No. Telepon");
-        getContentPane().add(lblTelepon, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 110, -1, -1));
-
-        lblNama.setText("Nama Supplier");
-        getContentPane().add(lblNama, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 178, -1, -1));
-
-        txtTelepon.addActionListener(new java.awt.event.ActionListener() {
+        jButton4.setText("Reset");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtTeleponActionPerformed(evt);
+                jButton4ActionPerformed(evt);
             }
         });
-        getContentPane().add(txtTelepon, new org.netbeans.lib.awtextra.AbsoluteConstraints(123, 107, 71, -1));
 
-        txtNama.addActionListener(new java.awt.event.ActionListener() {
+        jButton2.setText("Hapus");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtNamaActionPerformed(evt);
+                jButton2ActionPerformed(evt);
             }
         });
-        getContentPane().add(txtNama, new org.netbeans.lib.awtextra.AbsoluteConstraints(123, 175, 71, -1));
 
-        lblEmail.setText("Email");
-        getContentPane().add(lblEmail, new org.netbeans.lib.awtextra.AbsoluteConstraints(332, 56, -1, -1));
-
-        txtEmail.addActionListener(new java.awt.event.ActionListener() {
+        jButton1.setText("Tambah");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtEmailActionPerformed(evt);
+                jButton1ActionPerformed(evt);
             }
         });
-        getContentPane().add(txtEmail, new org.netbeans.lib.awtextra.AbsoluteConstraints(437, 53, 71, -1));
 
-        txtAlamat.addActionListener(new java.awt.event.ActionListener() {
+        jButton5.setText("Ubah");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtAlamatActionPerformed(evt);
+                jButton5ActionPerformed(evt);
             }
         });
-        getContentPane().add(txtAlamat, new org.netbeans.lib.awtextra.AbsoluteConstraints(437, 117, 71, -1));
 
-        lblAlamat.setText("Alamat");
-        getContentPane().add(lblAlamat, new org.netbeans.lib.awtextra.AbsoluteConstraints(332, 110, -1, -1));
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(17, 17, 17)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel5))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jTextField3)
+                    .addComponent(jTextField1)
+                    .addComponent(jTextField2)
+                    .addComponent(jTextField4, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButton4, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jButton2, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jButton5, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addContainerGap())
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(170, 170, 170)
+                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(174, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton5))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4)
+                    .addComponent(jButton2))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton4))
+                .addGap(41, 41, 41)
+                .addComponent(jButton3)
+                .addContainerGap(132, Short.MAX_VALUE))
+        );
 
-        btnSimpan.setBackground(new java.awt.Color(211, 222, 229));
-        btnSimpan.setText("Simpan");
-        btnSimpan.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSimpanActionPerformed(evt);
-            }
-        });
-        getContentPane().add(btnSimpan, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 248, -1, -1));
-
-        btnUbah.setBackground(new java.awt.Color(211, 222, 229));
-        btnUbah.setText("Ubah");
-        btnUbah.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnUbahActionPerformed(evt);
-            }
-        });
-        getContentPane().add(btnUbah, new org.netbeans.lib.awtextra.AbsoluteConstraints(87, 248, -1, -1));
-
-        btnHapus.setBackground(new java.awt.Color(211, 222, 229));
-        btnHapus.setText("Hapus");
-        btnHapus.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnHapusActionPerformed(evt);
-            }
-        });
-        getContentPane().add(btnHapus, new org.netbeans.lib.awtextra.AbsoluteConstraints(168, 248, -1, -1));
-
-        btnBersihkan.setBackground(new java.awt.Color(211, 222, 229));
-        btnBersihkan.setText("Bersihkan");
-        btnBersihkan.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnBersihkanActionPerformed(evt);
-            }
-        });
-        getContentPane().add(btnBersihkan, new org.netbeans.lib.awtextra.AbsoluteConstraints(255, 248, -1, -1));
-
-        tblSupplier.setModel(new javax.swing.table.DefaultTableModel(
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null}
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
             },
             new String [] {
-                "No", "Kode Supplier", "Nama Supplier", "Alamat", "No. Telepon", "Email"
+                "ID Supplier", "Nama Perusahaan", "No.Telepon", "Alamat"
             }
-        ) {
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false
-            };
+        ));
+        jScrollPane1.setViewportView(jTable1);
 
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        jScrollPane1.setViewportView(tblSupplier);
-        if (tblSupplier.getColumnModel().getColumnCount() > 0) {
-            tblSupplier.getColumnModel().getColumn(4).setResizable(false);
-        }
-
-        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 277, 510, 275));
-
-        pack();
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 444, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(14, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(19, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 362, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnUbahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUbahActionPerformed
-   int row = tblSupplier.getSelectedRow();
-        if (row == -1) {
-            pesan("Pilih data supplier di tabel yang mau diubah!");
-            return;
-        }
-        
-        if (!validasi()) return;
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+   bersihkanForm();
+    }//GEN-LAST:event_jButton1ActionPerformed
 
-        String sql = "UPDATE supplier SET nama = ?, alamat = ?, telepon = ?, email = ? WHERE kode_supplier = ?";
-        try (Connection conn = (Connection) koneksi();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+      String sql = "INSERT INTO supplier (id_supplier, nama_perusahaan, no_telepon, alamat) VALUES (?, ?, ?, ?)";
+try (Connection conn = DatabaseConnection.getConnection();
+     PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, txtNama.getText().trim());
-            ps.setString(2, txtAlamat.getText().trim());
-            ps.setString(3, txtTelepon.getText().trim());
-            ps.setString(4, txtEmail.getText().trim());
-            ps.setString(5, txtKode.getText().trim());
+    ps.setString(1, jTextField1.getText().trim());
+    ps.setString(2, jTextField2.getText().trim());
+    ps.setString(3, jTextField3.getText().trim());
+    ps.setString(4, jTextField4.getText().trim());
 
-            ps.executeUpdate();
-            pesan("Data supplier berhasil diubah!");
-            tampilData();
-            bersihkan();
-        } catch (SQLException e) {
-            pesan("Gagal mengubah: " + e.getMessage());
-        }                                                              
-    }//GEN-LAST:event_btnUbahActionPerformed
-
-    private void txtKodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtKodeActionPerformed
-         txtNama.requestFocus();
-    }//GEN-LAST:event_txtKodeActionPerformed
-
-    private void txtEmailActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtEmailActionPerformed
-      if (tblSupplier.getSelectedRow() == -1) {
-            btnSimpan.doClick();
-        } else {
-            btnUbah.doClick();
-        }
-    }//GEN-LAST:event_txtEmailActionPerformed
-
-    private void txtTeleponActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTeleponActionPerformed
-       txtEmail.requestFocus();
-    }//GEN-LAST:event_txtTeleponActionPerformed
-
-    private void txtAlamatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAlamatActionPerformed
-          txtTelepon.requestFocus();
-    }//GEN-LAST:event_txtAlamatActionPerformed
-
-    private void txtNamaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNamaActionPerformed
-       txtAlamat.requestFocus();
-    }//GEN-LAST:event_txtNamaActionPerformed
-
-    private void btnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSimpanActionPerformed
-        if (tblSupplier.getSelectedRow() != -1) {
-            pesan("Klik Bersihkan dulu untuk menambah data baru");
-            return;
-        }
-        
-        // Panggil validasi form
-        if (!validasi()) return;
-
-        String sql = "INSERT INTO supplier (kode_supplier, nama, alamat, telepon, email) VALUES (?, ?, ?, ?, ?)";
-        try (Connection conn = com.unri.pbo.config.DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, txtKode.getText().trim());
-            ps.setString(2, txtNama.getText().trim());
-            ps.setString(3, txtAlamat.getText().trim());
-            ps.setString(4, txtTelepon.getText().trim());
-            ps.setString(5, txtEmail.getText().trim());
-
-            ps.executeUpdate();
-            pesan("Data supplier berhasil disimpan!");
-            tampilData();
-            bersihkan();
-        } catch (SQLException e) {
-            // Tangkap error jika kode supplier kembar (Duplicate entry / Error code 1062)
-            if (e.getErrorCode() == 1062) {
-                pesan("Gagal menyimpan: Kode supplier sudah terdaftar!");
-            } else {
-                pesan("Gagal menyimpan: " + e.getMessage());
-            }
-        }
-    }//GEN-LAST:event_btnSimpanActionPerformed
-
-    private void btnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHapusActionPerformed
-   int row = tblSupplier.getSelectedRow();
-        if (row == -1) {
-            pesan("Pilih data pada tabel terlebih dahulu!");
-            return;
-        }
-
-        // Mengambil id_mitra (kolom indeks 1) dan nama_industri (kolom indeks 2) dari tabel
-        String kode = tblSupplier.getValueAt(row, 1).toString();
-        String nama = tblSupplier.getValueAt(row, 2).toString();
-
-        int pilih = JOptionPane.showConfirmDialog(
-            this,
-            "Apakah Anda yakin ingin menghapus data \"" + nama + "\" (" + kode + ")?",
-            "Konfirmasi Hapus",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.WARNING_MESSAGE
-        );
-        if (pilih != JOptionPane.YES_OPTION) return;
-
-        String sql = "DELETE FROM tb_industri WHERE id_mitra = ?";
-        try (Connection conn = com.unri.pbo.config.DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, kode);
-            int rowsAffected = ps.executeUpdate();
-
-            if (rowsAffected > 0) {
-                pesan("Data berhasil dihapus!");
-                tampilData();
-                bersihkan();
-            } else {
-                pesan("Data tidak ditemukan atau sudah terhapus.");
-            }
-        } catch (SQLException e) {
-            // Penanganan error jika data masih berelasi (Foreign Key constraint)
-            if (e.getErrorCode() == 1451) {
-                pesan("Gagal menghapus: Data ini masih terhubung dengan tabel lain!");
-            } else {
-                pesan("Gagal menghapus: " + e.getMessage());
-            }
-        }
-    }//GEN-LAST:event_btnHapusActionPerformed
-
-    private void btnBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBersihkanActionPerformed
-       bersihkan();
-    }//GEN-LAST:event_btnBersihkanActionPerformed
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new PanelSupplier().setVisible(true));
+    ps.executeUpdate();
+    JOptionPane.showMessageDialog(this, "Data supplier berhasil disimpan!");
+    tampilData();
+    bersihkanForm();
+} catch (SQLException e) {
+    if (e.getErrorCode() == 1062) {
+        JOptionPane.showMessageDialog(this, "ID Supplier sudah terdaftar!");
+    } else {
+        JOptionPane.showMessageDialog(this, "Gagal menyimpan: " + e.getMessage());
     }
+}
+    }//GEN-LAST:event_jButton5ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    int row = jTable1.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Pilih data supplier pada tabel terlebih dahulu!");
+            return;
+        }
+
+        String id = jTable1.getValueAt(row, 0).toString();
+        String nama = jTable1.getValueAt(row, 1).toString();
+
+        int konfirmasi = JOptionPane.showConfirmDialog(
+            this,
+            "Hapus supplier \"" + nama + "\" (" + id + ")?",
+            "Konfirmasi Hapus",
+            JOptionPane.YES_NO_OPTION
+        );
+        if (konfirmasi != JOptionPane.YES_OPTION) return;
+
+        String sql = "DELETE FROM supplier WHERE kode_supplier = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, id);
+            ps.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Data supplier berhasil dihapus!");
+            tampilData();
+            bersihkanForm();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Gagal menghapus: " + e.getMessage());
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+    bersihkanForm();
+    }//GEN-LAST:event_jButton4ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    simpanDataBaru();
+    }//GEN-LAST:event_jButton3ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnBersihkan;
-    private javax.swing.JButton btnHapus;
-    private javax.swing.JButton btnSimpan;
-    private javax.swing.JButton btnUbah;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel lblAlamat;
-    private javax.swing.JLabel lblEmail;
-    private javax.swing.JLabel lblJudul;
-    private javax.swing.JLabel lblKode;
-    private javax.swing.JLabel lblNama;
-    private javax.swing.JLabel lblTelepon;
-    private javax.swing.JTable tblSupplier;
-    private javax.swing.JTextField txtAlamat;
-    private javax.swing.JTextField txtEmail;
-    private javax.swing.JTextField txtKode;
-    private javax.swing.JTextField txtNama;
-    private javax.swing.JTextField txtTelepon;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JTextField jTextField1;
+    private javax.swing.JTextField jTextField2;
+    private javax.swing.JTextField jTextField3;
+    private javax.swing.JTextField jTextField4;
     // End of variables declaration//GEN-END:variables
-
-    private void bersihkan() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    private void tampilData() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    private void pesan(String data_berhasil_disimpan) {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    private Object koneksi() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    private boolean validasi() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
 }

@@ -14,30 +14,54 @@ public class dashboard extends javax.swing.JFrame {
 
     private PanelRiwayatTransaksi panelRiwayat;
     private PanelPembelian panelPembelian;
+    private PanelKasir panelKasir;
+    private PanelPelanggan panelPelanggan;
+    private PanelProduk panelProduk;
+    private PanelPenjualan panelPenjualan;
+    private PanelSupplier panelSupplier;
+    private PanelRestock panelRestock;
 
-    public dashboard() {
+   public dashboard() {
         initComponents();
-        panelKonten.setLayout(new java.awt.CardLayout());
+
+        // Inisialisasi semua panel sekali saja
+        panelProduk = new PanelProduk();
+        panelKasir = new PanelKasir();
+        panelPenjualan = new PanelPenjualan();
+        panelPembelian = new PanelPembelian();
+        panelRiwayat = new PanelRiwayatTransaksi();
+        panelPelanggan = new PanelPelanggan();
+        panelSupplier = new PanelSupplier();
         
+       
+
+        // Atur layout frame utama
+        getContentPane().removeAll();
+        getContentPane().setLayout(new java.awt.BorderLayout());
+        getContentPane().add(PanelUtama, java.awt.BorderLayout.NORTH);
+
+        panelKonten.setLayout(new java.awt.BorderLayout());
+        getContentPane().add(panelKonten, java.awt.BorderLayout.CENTER);
+
+        // Kelompokkan tombol navigasi
         buttonGroup1.add(btnProduk);
+        buttonGroup1.add(btnProduk1);
         buttonGroup1.add(btnKasir);
         buttonGroup1.add(btnPenjualan);
         buttonGroup1.add(btnPembelian);
         buttonGroup1.add(btnRestock);
         buttonGroup1.add(btnRiwayat);
-        
-        panelRiwayat = new PanelRiwayatTransaksi();
-        panelPembelian = new PanelPembelian();
-        
-        panelKonten.add(new PanelProduk(), "pageProduk");
-        panelKonten.add(new PanelKasir(), "pageKasir");
-        panelKonten.add(new PanelPenjualan(), "pagePenjualan");
-        panelKonten.add(panelPembelian, "pagePembelian");
-        panelKonten.add(buatHalamanSementara("Halaman Restock"), "pageRestock");
-        panelKonten.add(panelRiwayat, "pageRiwayat"); // Menggantikan buatHalamanSementara("Halaman Riwayat")
-        
-        this.setSize(900, 620);
-        this.setLocationRelativeTo(null);
+
+        // Tampilkan Beranda sebagai halaman awal
+        tampilkanPanel(buatHalamanSementara("Selamat Datang di POS ATK Prima Jaya"), btnProduk);
+
+        this.setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
+   }
+private javax.swing.JScrollPane buatScroll(java.awt.Component comp) {
+        javax.swing.JScrollPane scroll = new javax.swing.JScrollPane(comp);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        scroll.setBorder(null);
+        return scroll;
     }
 
     private javax.swing.JPanel buatHalamanSementara(String judul) {
@@ -49,12 +73,14 @@ public class dashboard extends javax.swing.JFrame {
         return p;
     }
 
-    private void gantiHalaman(String namaPage, javax.swing.JToggleButton tombolAktif) {
-        java.awt.CardLayout cl = (java.awt.CardLayout) panelKonten.getLayout();
-        cl.show(panelKonten, namaPage);
+    private void tampilkanPanel(java.awt.Component halaman, javax.swing.JToggleButton tombolAktif) {
+        panelKonten.removeAll();
+        panelKonten.add(buatScroll(halaman), java.awt.BorderLayout.CENTER);
+        panelKonten.revalidate();
+        panelKonten.repaint();
 
         javax.swing.JToggleButton[] semuaTombol = {
-            btnProduk, btnKasir, btnPenjualan, btnPembelian, btnRestock, btnRiwayat
+            btnProduk, btnProduk1, btnKasir, btnPenjualan, btnPembelian, btnRestock, btnRiwayat
         };
         for (javax.swing.JToggleButton btn : semuaTombol) {
             if (btn == tombolAktif) {
@@ -64,8 +90,6 @@ public class dashboard extends javax.swing.JFrame {
             }
         }
     }
-  
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -76,19 +100,31 @@ public class dashboard extends javax.swing.JFrame {
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
+        panelKonten = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
         PanelUtama = new javax.swing.JPanel();
         btnRiwayat = new javax.swing.JToggleButton();
         btnProduk = new javax.swing.JToggleButton();
         btnPembelian = new javax.swing.JToggleButton();
         btnRestock = new javax.swing.JToggleButton();
+        btnProduk1 = new javax.swing.JToggleButton();
         btnPenjualan = new javax.swing.JToggleButton();
         btnKasir = new javax.swing.JToggleButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        panelKonten = new javax.swing.JPanel();
-        jMenuBar1 = new javax.swing.JMenuBar();
+        jPanel3 = new javax.swing.JPanel();
+        jMenuBar2 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        menuPelanggan = new javax.swing.JMenuItem();
+        menuSupllier = new javax.swing.JMenuItem();
+        jMenu2 = new javax.swing.JMenu();
+        jMenu4 = new javax.swing.JMenu();
+        jMenu3 = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        panelKonten.setBackground(new java.awt.Color(248, 245, 236));
+        panelKonten.setLayout(new java.awt.CardLayout());
 
         PanelUtama.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -102,7 +138,7 @@ public class dashboard extends javax.swing.JFrame {
 
         btnProduk.setBackground(new java.awt.Color(240, 138, 36));
         btnProduk.setForeground(new java.awt.Color(21, 94, 73));
-        btnProduk.setText("Produk");
+        btnProduk.setText("Beranda");
         btnProduk.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnProdukActionPerformed(evt);
@@ -125,6 +161,14 @@ public class dashboard extends javax.swing.JFrame {
             }
         });
 
+        btnProduk1.setForeground(new java.awt.Color(21, 94, 73));
+        btnProduk1.setText("Produk");
+        btnProduk1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnProduk1ActionPerformed(evt);
+            }
+        });
+
         btnPenjualan.setForeground(new java.awt.Color(21, 94, 73));
         btnPenjualan.setText("Penjualan");
         btnPenjualan.addActionListener(new java.awt.event.ActionListener() {
@@ -140,39 +184,6 @@ public class dashboard extends javax.swing.JFrame {
                 btnKasirActionPerformed(evt);
             }
         });
-
-        javax.swing.GroupLayout PanelUtamaLayout = new javax.swing.GroupLayout(PanelUtama);
-        PanelUtama.setLayout(PanelUtamaLayout);
-        PanelUtamaLayout.setHorizontalGroup(
-            PanelUtamaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(PanelUtamaLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(btnProduk, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnKasir, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnPenjualan, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnPembelian, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnRestock, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnRiwayat, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        PanelUtamaLayout.setVerticalGroup(
-            PanelUtamaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, PanelUtamaLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(PanelUtamaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnProduk, javax.swing.GroupLayout.DEFAULT_SIZE, 33, Short.MAX_VALUE)
-                    .addComponent(btnRiwayat, javax.swing.GroupLayout.DEFAULT_SIZE, 33, Short.MAX_VALUE)
-                    .addComponent(btnPembelian, javax.swing.GroupLayout.DEFAULT_SIZE, 33, Short.MAX_VALUE)
-                    .addComponent(btnRestock, javax.swing.GroupLayout.DEFAULT_SIZE, 33, Short.MAX_VALUE)
-                    .addComponent(btnPenjualan, javax.swing.GroupLayout.DEFAULT_SIZE, 33, Short.MAX_VALUE)
-                    .addComponent(btnKasir, javax.swing.GroupLayout.DEFAULT_SIZE, 33, Short.MAX_VALUE))
-                .addContainerGap())
-        );
 
         jPanel2.setBackground(new java.awt.Color(21, 94, 73));
 
@@ -197,25 +208,124 @@ public class dashboard extends javax.swing.JFrame {
                 .addContainerGap(28, Short.MAX_VALUE))
         );
 
-        panelKonten.setBackground(new java.awt.Color(248, 245, 236));
-        panelKonten.setLayout(new java.awt.CardLayout());
-        setJMenuBar(jMenuBar1);
+        javax.swing.GroupLayout PanelUtamaLayout = new javax.swing.GroupLayout(PanelUtama);
+        PanelUtama.setLayout(PanelUtamaLayout);
+        PanelUtamaLayout.setHorizontalGroup(
+            PanelUtamaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(PanelUtamaLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(btnProduk, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnProduk1, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnKasir, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnPenjualan, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnPembelian, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnRestock, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnRiwayat, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(39, Short.MAX_VALUE))
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        PanelUtamaLayout.setVerticalGroup(
+            PanelUtamaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(PanelUtamaLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(PanelUtamaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnProduk, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnRiwayat, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnPembelian, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnRestock, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnPenjualan, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnKasir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnProduk1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 39, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(PanelUtama, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(PanelUtama, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(45, Short.MAX_VALUE))
+        );
+
+        jMenu1.setText("Master Data");
+        jMenu1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenu1ActionPerformed(evt);
+            }
+        });
+
+        menuPelanggan.setText("Data Pelanggan");
+        menuPelanggan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuPelangganActionPerformed(evt);
+            }
+        });
+        jMenu1.add(menuPelanggan);
+
+        menuSupllier.setText("Data Supplier");
+        menuSupllier.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuSupllierActionPerformed(evt);
+            }
+        });
+        jMenu1.add(menuSupllier);
+
+        jMenuBar2.add(jMenu1);
+
+        jMenu2.setText("Transaksi");
+        jMenuBar2.add(jMenu2);
+
+        jMenu4.setText("Bantuan");
+        jMenuBar2.add(jMenu4);
+
+        jMenu3.setText("Laporan ");
+        jMenuBar2.add(jMenu3);
+
+        setJMenuBar(jMenuBar2);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(PanelUtama, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(panelKonten, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(PanelUtama, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 172, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 146, Short.MAX_VALUE)
                 .addComponent(panelKonten, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -224,28 +334,60 @@ public class dashboard extends javax.swing.JFrame {
 
     private void btnRiwayatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRiwayatActionPerformed
     panelRiwayat.loadDataRiwayat(); 
-        gantiHalaman("pageRiwayat", btnRiwayat);
+        tampilkanPanel(panelRiwayat, btnRiwayat);
     }//GEN-LAST:event_btnRiwayatActionPerformed
 
     private void btnPembelianActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPembelianActionPerformed
-      gantiHalaman("pagePembelian", btnPembelian);
+     tampilkanPanel(panelPembelian, btnPembelian);
     }//GEN-LAST:event_btnPembelianActionPerformed
 
     private void btnRestockActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRestockActionPerformed
-      gantiHalaman("pageRestock", btnRestock);
+ if (panelRestock == null) {
+    panelRestock = new PanelRestock();
+}
+buttonGroup1.clearSelection();
+tampilkanPanel(panelRestock, null);
     }//GEN-LAST:event_btnRestockActionPerformed
 
     private void btnPenjualanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPenjualanActionPerformed
-       gantiHalaman("pagePenjualan", btnPenjualan);
+   tampilkanPanel(panelPenjualan, btnPenjualan);
+ 
     }//GEN-LAST:event_btnPenjualanActionPerformed
 
     private void btnKasirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnKasirActionPerformed
-        gantiHalaman("pageKasir", btnKasir);
+       panelKasir.loadDataDropdown();
+        tampilkanPanel(panelKasir, btnKasir);
+   
     }//GEN-LAST:event_btnKasirActionPerformed
 
     private void btnProdukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProdukActionPerformed
-gantiHalaman("pageProduk", btnProduk);                                    
+tampilkanPanel(buatHalamanSementara("Selamat Datang di POS ATK Prima Jaya"), btnProduk);                               
     }//GEN-LAST:event_btnProdukActionPerformed
+
+    private void btnProduk1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProduk1ActionPerformed
+                        tampilkanPanel(panelProduk, btnProduk1);
+    }//GEN-LAST:event_btnProduk1ActionPerformed
+
+    private void menuPelangganActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuPelangganActionPerformed
+   buttonGroup1.clearSelection();
+        tampilkanPanel(panelPelanggan, null);
+    }//GEN-LAST:event_menuPelangganActionPerformed
+
+    private void menuSupllierActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuSupllierActionPerformed
+if (panelSupplier == null) {
+    panelSupplier = new PanelSupplier();
+}
+buttonGroup1.clearSelection();
+tampilkanPanel(panelSupplier, null); 
+    }//GEN-LAST:event_menuSupllierActionPerformed
+
+    private void jMenu1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu1ActionPerformed
+    if (panelSupplier == null) {
+    panelSupplier = new PanelSupplier();
+}
+buttonGroup1.clearSelection();
+tampilkanPanel(panelSupplier, null);
+    }//GEN-LAST:event_jMenu1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -278,12 +420,21 @@ gantiHalaman("pageProduk", btnProduk);
     private javax.swing.JToggleButton btnPembelian;
     private javax.swing.JToggleButton btnPenjualan;
     private javax.swing.JToggleButton btnProduk;
+    private javax.swing.JToggleButton btnProduk1;
     private javax.swing.JToggleButton btnRestock;
     private javax.swing.JToggleButton btnRiwayat;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenu jMenu3;
+    private javax.swing.JMenu jMenu4;
+    private javax.swing.JMenuBar jMenuBar2;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JMenuItem menuPelanggan;
+    private javax.swing.JMenuItem menuSupllier;
     private javax.swing.JPanel panelKonten;
     // End of variables declaration//GEN-END:variables
 }

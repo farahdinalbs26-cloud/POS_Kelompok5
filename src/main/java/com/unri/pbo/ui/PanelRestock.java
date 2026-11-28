@@ -3,6 +3,17 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
 package com.unri.pbo.ui;
+import com.unri.pbo.config.DatabaseConnection;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.JOptionPane;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -13,10 +24,96 @@ public class PanelRestock extends javax.swing.JPanel {
     /**
      * Creates new form PanelRestock
      */
+ 
+    private final Map<String, Double> mapHargaBeli = new HashMap<>();
+    private DefaultTableModel modelTabel;
+
     public PanelRestock() {
         initComponents();
+        jSpinner1.setModel(new SpinnerNumberModel(1, 1, 10000, 1));
+        
+        // Rapikan typo label & kolom tabel
+        jLabel2.setText("Supplier");
+        modelTabel = new DefaultTableModel(
+            new String[]{"No", "Nama Produk", "Jumlah", "Supplier", "Harga"}, 0
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        jTable1.setModel(modelTabel);
+
+        muatComboProduk();
+        muatComboSupplier();
+
+        // Otomatis isi kolom Harga saat Produk dipilih
+        jComboBox1.addActionListener(e -> isiHargaOtomatis());
+        isiHargaOtomatis();
     }
 
+    private void muatComboProduk() {
+        jComboBox1.removeAllItems();
+        mapHargaBeli.clear();
+        String sql = "SELECT id_produk, nama_produk, harga_beli FROM produk ORDER BY id_produk ASC";
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            while (rs.next()) {
+                String item = rs.getString("id_produk") + " - " + rs.getString("nama_produk");
+                jComboBox1.addItem(item);
+                mapHargaBeli.put(item, rs.getDouble("harga_beli"));
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Gagal memuat produk: " + e.getMessage());
+        }
+    }
+
+    private void muatComboSupplier() {
+        jComboBox2.removeAllItems();
+        String sql = "SELECT id_supplier, nama_perusahaan FROM supplier ORDER BY id_supplier ASC";
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            while (rs.next()) {
+                String item = rs.getString("id_supplier") + " - " + rs.getString("nama_perusahaan");
+                jComboBox2.addItem(item);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Gagal memuat supplier: " + e.getMessage());
+        }
+    }
+
+    private void isiHargaOtomatis() {
+        Object selected = jComboBox1.getSelectedItem();
+        if (selected != null && mapHargaBeli.containsKey(selected.toString())) {
+            double harga = mapHargaBeli.get(selected.toString());
+            jTextField1.setText(String.format("%.0f", harga));
+        }
+    }
+
+    private String generateIdPembelian(Connection conn) throws SQLException {
+        String sql = "SELECT id_pembelian FROM pembelian ORDER BY id_pembelian DESC LIMIT 1";
+        try (Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            if (rs.next() && rs.getString("id_pembelian") != null) {
+                String lastId = rs.getString("id_pembelian");
+                int num = Integer.parseInt(lastId.replaceAll("[^0-9]", "")) + 1;
+                return String.format("PB%03d", num);
+            }
+        } catch (Exception ignored) {}
+        return "PB001";
+    }
+
+    private void bersihkan() {
+        if (jComboBox1.getItemCount() > 0) jComboBox1.setSelectedIndex(0);
+        if (jComboBox2.getItemCount() > 0) jComboBox2.setSelectedIndex(0);
+        jSpinner1.setValue(1);
+        isiHargaOtomatis();
+        jTable1.clearSelection();
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -27,16 +124,21 @@ public class PanelRestock extends javax.swing.JPanel {
     private void initComponents() {
 
         lblJudul = new javax.swing.JLabel();
-        lblTanggal = new javax.swing.JLabel();
-        lblBarang = new javax.swing.JLabel();
-        lblJumlah = new javax.swing.JLabel();
-        txtJumlah = new javax.swing.JTextField();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jComboBox1 = new javax.swing.JComboBox<>();
+        jLabel2 = new javax.swing.JLabel();
+        jComboBox2 = new javax.swing.JComboBox<>();
+        jLabel3 = new javax.swing.JLabel();
+        jTextField1 = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        jSpinner1 = new javax.swing.JSpinner();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        tblRestock = new javax.swing.JTable();
-        btnSimpan = new javax.swing.JButton();
-        btnBersihkan = new javax.swing.JButton();
-        cmbBarang = new javax.swing.JComboBox<>();
-        txtTanggal = new javax.swing.JFormattedTextField();
+        jTable1 = new javax.swing.JTable();
 
         setBackground(new java.awt.Color(244, 244, 244));
         setPreferredSize(new java.awt.Dimension(680, 340));
@@ -44,192 +146,287 @@ public class PanelRestock extends javax.swing.JPanel {
         lblJudul.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblJudul.setText("Data Restock");
 
-        lblTanggal.setText("Tanggal");
+        jLabel1.setText("Produk");
 
-        lblBarang.setText("Nama Barang");
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        lblJumlah.setText("Jumlah");
+        jLabel2.setText("Supllier");
 
-        txtJumlah.addActionListener(new java.awt.event.ActionListener() {
+        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        jLabel3.setText("Harga ");
+
+        jLabel4.setText("Jumlah");
+
+        jButton1.setText("Simpan");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtJumlahActionPerformed(evt);
+                jButton1ActionPerformed(evt);
             }
         });
 
-        tblRestock.setModel(new javax.swing.table.DefaultTableModel(
+        jButton2.setText("Bersihkan");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        jButton3.setText("Hapus");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel4)
+                                .addGap(18, 18, 18)
+                                .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(jLabel2)
+                                        .addComponent(jLabel1))
+                                    .addComponent(jLabel3))
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jComboBox1, 0, 193, Short.MAX_VALUE)
+                                    .addComponent(jComboBox2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jTextField1)))))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jButton1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jButton2)
+                        .addGap(18, 18, 18)
+                        .addComponent(jButton3)))
+                .addContainerGap(26, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(16, 16, 16)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(34, 34, 34)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(29, 29, 29)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(28, 28, 28)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 54, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1)
+                    .addComponent(jButton2)
+                    .addComponent(jButton3))
+                .addGap(33, 33, 33))
+        );
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "No.", "Tanggal", "Nama Barang", "Jumlah"
+                "No", "Nama Produk", "Jumlaj", "Supplier", "Harga"
             }
         ));
-        jScrollPane1.setViewportView(tblRestock);
+        jScrollPane1.setViewportView(jTable1);
 
-        btnSimpan.setBackground(new java.awt.Color(211, 222, 229));
-        btnSimpan.setText("Simpan");
-        btnSimpan.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSimpanActionPerformed(evt);
-            }
-        });
-
-        btnBersihkan.setBackground(new java.awt.Color(211, 222, 229));
-        btnBersihkan.setText("Bersihkan");
-        btnBersihkan.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnBersihkanActionPerformed(evt);
-            }
-        });
-
-        cmbBarang.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        cmbBarang.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmbBarangActionPerformed(evt);
-            }
-        });
-
-        txtTanggal.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtTanggalActionPerformed(evt);
-            }
-        });
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 403, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 527, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(lblJudul)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(lblBarang)
-                        .addComponent(lblTanggal)
-                        .addComponent(lblJumlah)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cmbBarang, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(txtJumlah, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(27, 27, 27)
-                        .addComponent(btnSimpan)
-                        .addGap(44, 44, 44)
-                        .addComponent(btnBersihkan))
-                    .addComponent(txtTanggal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(432, 432, 432))
+                        .addContainerGap()
+                        .addComponent(lblJudul))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(22, 22, 22)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(48, 48, 48)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(lblJudul)
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblTanggal)
-                    .addComponent(txtTanggal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblBarang)
-                    .addComponent(cmbBarang, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(25, 25, 25)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblJumlah)
-                    .addComponent(txtJumlah, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnSimpan)
-                    .addComponent(btnBersihkan))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(43, 43, 43))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(8, 8, 8)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(275, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBersihkanActionPerformed
-        txtTanggal.setText("");
-        txtJumlah.setText("");
-        if (cmbBarang.getItemCount() > 0) {
-            cmbBarang.setSelectedIndex(0);
-        }
-        tblRestock.clearSelection();
-    }//GEN-LAST:event_btnBersihkanActionPerformed
-
-    private void txtJumlahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtJumlahActionPerformed
-        btnSimpan.doClick(); // Otomatis klik tombol Simpan saat Enter ditekan di input jumlah
-    }//GEN-LAST:event_txtJumlahActionPerformed
-
-    private void cmbBarangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbBarangActionPerformed
-      txtJumlah.requestFocus(); // Pindah fokus ke input jumlah setelah memilih barang
-    }//GEN-LAST:event_cmbBarangActionPerformed
-
-    private void btnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSimpanActionPerformed
-       if (txtTanggal.getText().trim().isEmpty() || txtJumlah.getText().trim().isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Tanggal dan Jumlah wajib diisi!");
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    if (jComboBox1.getSelectedItem() == null || jComboBox2.getSelectedItem() == null) {
+            JOptionPane.showMessageDialog(this, "Pastikan data Produk dan Supplier sudah tersedia!");
             return;
         }
-        
-        // Validasi agar input jumlah benar-benar berupa angka bulat
-        int jumlah;
+
+        double harga;
         try {
-            jumlah = Integer.parseInt(txtJumlah.getText().trim());
-            if (jumlah <= 0) {
-                javax.swing.JOptionPane.showMessageDialog(this, "Jumlah harus lebih dari 0!");
-                return;
-            }
+            harga = Double.parseDouble(jTextField1.getText().trim());
+            if (harga <= 0) throw new NumberFormatException();
         } catch (NumberFormatException e) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Jumlah harus berupa angka!");
-            txtJumlah.requestFocus();
+            JOptionPane.showMessageDialog(this, "Masukkan nominal Harga yang valid!");
             return;
         }
 
-        javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) tblRestock.getModel();
-        
-        // Menghapus baris kosong bawaan NetBeans jika masih ada di awal
-        if (model.getRowCount() == 4 && model.getValueAt(0, 0) == null) {
-            model.setRowCount(0);
+        int jumlah = (Integer) jSpinner1.getValue();
+        if (jumlah <= 0) {
+            JOptionPane.showMessageDialog(this, "Jumlah restock minimal 1!");
+            return;
         }
 
-        int rowCount = model.getRowCount() + 1;
-        String namaBarang = cmbBarang.getSelectedItem() != null ? cmbBarang.getSelectedItem().toString() : "";
+        String produkItem = jComboBox1.getSelectedItem().toString();
+        String supplierItem = jComboBox2.getSelectedItem().toString();
 
-        model.addRow(new Object[]{
-            rowCount,
-            txtTanggal.getText().trim(),
-            namaBarang,
-            jumlah
-        });
+        String idProduk = produkItem.split(" - ")[0].trim();
+        String namaProduk = produkItem.split(" - ", 2)[1].trim();
+        String idSupplier = supplierItem.split(" - ")[0].trim();
+        String namaSupplier = supplierItem.split(" - ", 2)[1].trim();
+        double total = harga * jumlah;
 
-        javax.swing.JOptionPane.showMessageDialog(this, "Data restock berhasil ditambahkan!");
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            conn.setAutoCommit(false);
 
-        // Bersihkan form setelah simpan
-        txtTanggal.setText("");
-        txtJumlah.setText("");
-        if (cmbBarang.getItemCount() > 0) {
-            cmbBarang.setSelectedIndex(0);
+            // 1. Update stok & harga_beli di tabel produk
+            String sqlStok = "UPDATE produk SET stok = stok + ?, harga_beli = ? WHERE id_produk = ?";
+            try (PreparedStatement psStok = conn.prepareStatement(sqlStok)) {
+                psStok.setInt(1, jumlah);
+                psStok.setDouble(2, harga);
+                psStok.setString(3, idProduk);
+                psStok.executeUpdate();
+            }
+
+            // 2. Catat transaksi ke tabel pembelian
+            String idPembelian = generateIdPembelian(conn);
+            String sqlBeli = "INSERT INTO pembelian (id_pembelian, tanggal, id_supplier, total, status) VALUES (?, CURDATE(), ?, ?, 'Selesai')";
+            try (PreparedStatement psBeli = conn.prepareStatement(sqlBeli)) {
+                psBeli.setString(1, idPembelian);
+                psBeli.setString(2, idSupplier);
+                psBeli.setDouble(3, total);
+                psBeli.executeUpdate();
+            }
+
+            conn.commit();
+
+            // 3. Tampilkan ke tabel kanan
+            int no = modelTabel.getRowCount() + 1;
+            modelTabel.addRow(new Object[]{
+                no,
+                idProduk + " - " + namaProduk,
+                jumlah,
+                namaSupplier,
+                String.format("%.0f", harga)
+            });
+
+            mapHargaBeli.put(produkItem, harga);
+            JOptionPane.showMessageDialog(this, "Restock berhasil! Stok " + namaProduk + " bertambah +" + jumlah);
+            bersihkan();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Gagal menyimpan restock: " + e.getMessage());
         }
-        txtTanggal.requestFocus();
-    }//GEN-LAST:event_btnSimpanActionPerformed
+    
+    }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void txtTanggalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTanggalActionPerformed
-        cmbBarang.requestFocus(); // Pindah fokus ke pilih barang saat Enter ditekan
-    }//GEN-LAST:event_txtTanggalActionPerformed
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    bersihkan();
+    }                                        
+
+    // Tombol Hapus -> Hapus baris terpilih & kurangi kembali stok produk
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+        int row = jTable1.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Pilih data pada tabel yang ingin dihapus!");
+            return;
+        }
+
+        String produkCol = modelTabel.getValueAt(row, 1).toString();
+        String idProduk = produkCol.split(" - ")[0].trim();
+        int jumlah = Integer.parseInt(modelTabel.getValueAt(row, 2).toString());
+
+        int konfirmasi = JOptionPane.showConfirmDialog(
+            this,
+            "Hapus item restock ini dan kurangi stok sebanyak " + jumlah + "?",
+            "Konfirmasi Hapus",
+            JOptionPane.YES_NO_OPTION
+        );
+        if (konfirmasi != JOptionPane.YES_OPTION) return;
+
+        String sql = "UPDATE produk SET stok = GREATEST(0, stok - ?) WHERE id_produk = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, jumlah);
+            ps.setString(2, idProduk);
+            ps.executeUpdate();
+
+            modelTabel.removeRow(row);
+            for (int i = 0; i < modelTabel.getRowCount(); i++) {
+                modelTabel.setValueAt(i + 1, i, 0);
+            }
+            JOptionPane.showMessageDialog(this, "Item dihapus dan stok dikembalikan.");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Gagal menghapus: " + e.getMessage());
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnBersihkan;
-    private javax.swing.JButton btnSimpan;
-    private javax.swing.JComboBox<String> cmbBarang;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
+    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JComboBox<String> jComboBox2;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel lblBarang;
+    private javax.swing.JSpinner jSpinner1;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JTextField jTextField1;
     private javax.swing.JLabel lblJudul;
-    private javax.swing.JLabel lblJumlah;
-    private javax.swing.JLabel lblTanggal;
-    private javax.swing.JTable tblRestock;
-    private javax.swing.JTextField txtJumlah;
-    private javax.swing.JFormattedTextField txtTanggal;
     // End of variables declaration//GEN-END:variables
 }
