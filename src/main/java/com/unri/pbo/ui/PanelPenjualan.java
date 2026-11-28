@@ -18,11 +18,14 @@ public class PanelPenjualan extends javax.swing.JPanel {
         initTanggalField();
     }
    private void initTanggalField() {
-    java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy");
-    String tanggalHariIni = java.time.LocalDate.now().format(formatter);
-    jTextField1.setText(tanggalHariIni);
+    try {
+        javax.swing.text.MaskFormatter dateMask = new javax.swing.text.MaskFormatter("##/##/####");
+        dateMask.setPlaceholderCharacter('_');
+        dateMask.install(jFormattedTextField2);
+    } catch (java.text.ParseException e) {
+        javax.swing.JOptionPane.showMessageDialog(this, "Format tanggal error: " + e.getMessage());
+    }
 }
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
