@@ -4,14 +4,15 @@
  */
 package com.unri.pbo.ui;
 
-import com.unri.pbo.model.Pelanggan;
+import com.unri.pbo.Pelanggan;
+import java.sql.SQLException;
 import javax.swing.JOptionPane;
-
 /**
  *
  * @author FARRAS ZAHY
  */
 public class PanelPelanggan extends javax.swing.JPanel {
+    private final com.unri.pbo.model.Pelanggan pelangganModel = new com.unri.pbo.model.Pelanggan();
 
     /**
      * Creates new form PanelPelanggan
@@ -37,24 +38,16 @@ public class PanelPelanggan extends javax.swing.JPanel {
         });
     }
 
-    private void tampilData() {
-        Pelanggan p = new Pelanggan();
-        tblPelanggan.setModel(p.getTabelPelanggan());
+    public void tampilData() {
+        try {
+            tblPelanggan.setModel(pelangganModel.getTabelPelanggan());
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Gagal memuat data pelanggan: " + e.getMessage());
+        }
     }
 
     private void generateKode() {
-        int rowCount = tblPelanggan.getRowCount();
-        if (rowCount == 0) {
-            txtKode.setText("P001");
-        } else {
-            String kodeTerakhir = tblPelanggan.getValueAt(rowCount - 1, 1).toString();
-            try {
-                int angka = Integer.parseInt(kodeTerakhir.replaceAll("[^0-9]", "")) + 1;
-                txtKode.setText(String.format("P%03d", angka));
-            } catch (NumberFormatException e) {
-                txtKode.setText(String.format("P%03d", rowCount + 1));
-            }
-        }
+        txtKode.setText(pelangganModel.generateKodePelanggan());
     }
 
     private void bersihkanForm() {
@@ -64,6 +57,7 @@ public class PanelPelanggan extends javax.swing.JPanel {
         txtEmail.setText("");
         tblPelanggan.clearSelection();
         generateKode();
+        txtNama.requestFocus();
     }
 
     /**
@@ -232,7 +226,7 @@ public class PanelPelanggan extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSimpanActionPerformed
-        if (tblPelanggan.getSelectedRow() != -1) {
+      if (tblPelanggan.getSelectedRow() != -1) {
             JOptionPane.showMessageDialog(this, "Klik Bersihkan dulu untuk menambah data baru!");
             return;
         }
@@ -241,19 +235,26 @@ public class PanelPelanggan extends javax.swing.JPanel {
             return;
         }
 
-        Pelanggan p = new Pelanggan();
-        p.setKodePelanggan(txtKode.getText().trim());
-        p.setNamaInstansi(txtNama.getText().trim());
-        p.setAlamat(txtAlamat.getText().trim());
-        p.setNoTelepon(txtTelepon.getText().trim());
-        p.setEmail(txtEmail.getText().trim());
+        // Bungkus ke objek com.unri.pbo.Pelanggan dari JAR dosen
+        Pelanggan p = new Pelanggan(
+            txtKode.getText().trim(),
+            txtNama.getText().trim(),
+            txtAlamat.getText().trim(),
+            txtTelepon.getText().trim(),
+            "Instansi"
+        );
 
-        if (p.simpan()) {
+        try {
+            pelangganModel.simpan(p, txtEmail.getText().trim());
             JOptionPane.showMessageDialog(this, "Data pelanggan berhasil disimpan!");
             tampilData();
             bersihkanForm();
-        } else {
-            JOptionPane.showMessageDialog(this, "Gagal menyimpan data ke database!");
+        } catch (SQLException e) {
+            if (e.getErrorCode() == 1062) {
+                JOptionPane.showMessageDialog(this, "Kode Pelanggan sudah terdaftar!");
+            } else {
+                JOptionPane.showMessageDialog(this, "Gagal menyimpan data: " + e.getMessage());
+            }
         }
     }//GEN-LAST:event_btnSimpanActionPerformed
 
@@ -288,24 +289,26 @@ public class PanelPelanggan extends javax.swing.JPanel {
             return;
         }
 
-        Pelanggan p = new Pelanggan();
-        p.setKodePelanggan(txtKode.getText().trim());
-        p.setNamaInstansi(txtNama.getText().trim());
-        p.setAlamat(txtAlamat.getText().trim());
-        p.setNoTelepon(txtTelepon.getText().trim());
-        p.setEmail(txtEmail.getText().trim());
+        Pelanggan p = new Pelanggan(
+            txtKode.getText().trim(),
+            txtNama.getText().trim(),
+            txtAlamat.getText().trim(),
+            txtTelepon.getText().trim(),
+            "Instansi"
+        );
 
-        if (p.ubah()) {
+        try {
+            pelangganModel.ubah(p, txtEmail.getText().trim());
             JOptionPane.showMessageDialog(this, "Data pelanggan berhasil diubah!");
             tampilData();
             bersihkanForm();
-        } else {
-            JOptionPane.showMessageDialog(this, "Gagal mengubah data di database!");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Gagal mengubah data: " + e.getMessage());
         }
     }//GEN-LAST:event_btnUbahActionPerformed
 
     private void btnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHapusActionPerformed
-    int selectedRow = tblPelanggan.getSelectedRow();
+   int selectedRow = tblPelanggan.getSelectedRow();
         if (selectedRow == -1) {
             JOptionPane.showMessageDialog(this, "Pilih dulu data di tabel yang mau dihapus!");
             return;
@@ -316,13 +319,13 @@ public class PanelPelanggan extends javax.swing.JPanel {
             "Konfirmasi", JOptionPane.YES_NO_OPTION);
         if (pilih != JOptionPane.YES_OPTION) return;
 
-        Pelanggan p = new Pelanggan();
-        if (p.hapus(txtKode.getText().trim())) {
+        try {
+            pelangganModel.hapus(txtKode.getText().trim());
             JOptionPane.showMessageDialog(this, "Data pelanggan berhasil dihapus!");
             tampilData();
             bersihkanForm();
-        } else {
-            JOptionPane.showMessageDialog(this, "Gagal menghapus data di database!");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Gagal menghapus data: " + e.getMessage());
         }
     }//GEN-LAST:event_btnHapusActionPerformed
 

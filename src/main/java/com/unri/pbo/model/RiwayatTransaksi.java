@@ -1,69 +1,54 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.unri.pbo.model;
 
-/**
- *
- * @author Strgirlezz
- */
+import com.unri.pbo.config.DatabaseConnection;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 public class RiwayatTransaksi {
-    private String idTransaksi;
-    private String tanggalWaktu;
-    private String jenis;
-    private String pelangganSupplier;
-    private double total;
 
-    public RiwayatTransaksi() {
-    }
+    // Ambil gabungan data penjualan dan pembelian berdasarkan kata kunci pencarian
+    public List<Object[]> getDaftarRiwayat(String keyword) throws SQLException {
+        List<Object[]> list = new ArrayList<>();
+        String kataKunci = "%" + (keyword != null ? keyword.trim() : "") + "%";
 
-    public RiwayatTransaksi(String idTransaksi, String tanggalWaktu, String jenis, String pelangganSupplier, double total) {
-        this.idTransaksi = idTransaksi;
-        this.tanggalWaktu = tanggalWaktu;
-        this.jenis = jenis;
-        this.pelangganSupplier = pelangganSupplier;
-        this.total = total;
-    }
+        String sql = "SELECT * FROM (" +
+                     "  SELECT id_penjualan AS kode, tanggal, 'Penjualan' AS jenis, " +
+                     "         kode_pelanggan AS keterangan, total " +
+                     "  FROM penjualan " +
+                     "  UNION ALL " +
+                     "  SELECT id_pembelian AS kode, tanggal, 'Pembelian' AS jenis, " +
+                     "         id_supplier AS keterangan, total " +
+                     "  FROM pembelian " +
+                     ") AS gabungan " +
+                     "WHERE kode LIKE ? OR tanggal LIKE ? OR jenis LIKE ? OR keterangan LIKE ? " +
+                     "ORDER BY tanggal DESC, kode DESC";
 
-    public String getIdTransaksi() {
-        return idTransaksi;
-    }
+        try (Connection c = DatabaseConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
 
-    public void setIdTransaksi(String idTransaksi) {
-        this.idTransaksi = idTransaksi;
-    }
+            ps.setString(1, kataKunci);
+            ps.setString(2, kataKunci);
+            ps.setString(3, kataKunci);
+            ps.setString(4, kataKunci);
 
-    public String getTanggalWaktu() {
-        return tanggalWaktu;
-    }
-
-    public void setTanggalWaktu(String tanggalWaktu) {
-        this.tanggalWaktu = tanggalWaktu;
-    }
-
-    public String getJenis() {
-        return jenis;
-    }
-
-    public void setJenis(String jenis) {
-        this.jenis = jenis;
-    }
-
-    public String getPelangganSupplier() {
-        return pelangganSupplier;
-    }
-
-    public void setPelangganSupplier(String pelangganSupplier) {
-        this.pelangganSupplier = pelangganSupplier;
-    }
-
-    public double getTotal() {
-        return total;
-    }
-
-    public void setTotal(double total) {
-        this.total = total;
+            try (ResultSet rs = ps.executeQuery()) {
+                int no = 1;
+                while (rs.next()) {
+                    list.add(new Object[]{
+                        no++,
+                        rs.getString("kode"),
+                        rs.getString("tanggal"),
+                        rs.getString("jenis"),
+                        rs.getString("keterangan"),
+                        String.format("%.0f", rs.getDouble("total"))
+                    });
+                }
+            }
+        }
+        return list;
     }
 }
-

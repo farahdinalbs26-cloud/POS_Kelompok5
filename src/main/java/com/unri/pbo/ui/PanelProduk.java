@@ -4,55 +4,28 @@
  */
 package com.unri.pbo.ui;
 
-import com.unri.pbo.config.DatabaseConnection;
 import com.unri.pbo.model.Produk;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 public class PanelProduk extends javax.swing.JPanel {
 
+    private final Produk produkModel = new Produk();
+
     public PanelProduk() {
         initComponents();
-        jButton1.addActionListener(this::jButton1ActionPerformed);
-        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jTable1MouseClicked(evt);
-            }
-        });
         loadData();
         bersihkanForm();
     }
 
-    private void loadData() {
+    public final void loadData() {
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         model.setRowCount(0);
 
-        List<Produk> daftar = new ArrayList<>();
-        String sql = "SELECT id_produk, nama_produk, harga_beli, harga_jual, stok FROM produk ORDER BY id_produk";
-
-        try (Connection c = DatabaseConnection.getConnection();
-             PreparedStatement ps = c.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-
-            while (rs.next()) {
-                daftar.add(new Produk(
-                    rs.getString("id_produk"),
-                    rs.getString("nama_produk"),
-                    rs.getBigDecimal("harga_beli"),
-                    rs.getBigDecimal("harga_jual"),
-                    rs.getInt("stok")
-                ));
-            }
-
-            for (Produk p : daftar) {
+        try {
+            for (Produk p : produkModel.getAllProduk()) {
                 model.addRow(new Object[]{
                     p.getIdProduk(),
                     p.getNamaProduk(),
@@ -66,26 +39,9 @@ public class PanelProduk extends javax.swing.JPanel {
         }
     }
 
-    private String nextId() throws SQLException {
-        String sql = "SELECT id_produk FROM produk ORDER BY LENGTH(id_produk) DESC, id_produk DESC LIMIT 1";
-        try (Connection c = DatabaseConnection.getConnection();
-             PreparedStatement ps = c.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            int n = 0;
-            if (rs.next()) {
-                try {
-                    n = Integer.parseInt(rs.getString(1).substring(3));
-                } catch (RuntimeException e) {
-                    n = 0;
-                }
-            }
-            return String.format("BRG%03d", n + 1);
-        }
-    }
-
     private void bersihkanForm() {
         try {
-            jTextField1.setText(nextId());
+            jTextField1.setText(produkModel.generateNextId());
         } catch (SQLException e) {
             jTextField1.setText("");
         }
@@ -94,6 +50,7 @@ public class PanelProduk extends javax.swing.JPanel {
         jTextField3.setText("");
         jTextField5.setText("");
         jTextField4.setText("");
+        jTable1.clearSelection();
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -148,7 +105,7 @@ public class PanelProduk extends javax.swing.JPanel {
 
         jLabel5.setBackground(new java.awt.Color(255, 255, 255));
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel5.setText("Data Produk");
+        jLabel5.setText("PRODUK");
 
         jTextField2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jTextField2.addActionListener(this::jTextField2ActionPerformed);
@@ -311,7 +268,7 @@ public class PanelProduk extends javax.swing.JPanel {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
                                        
-        try {
+       try {
             Produk p = new Produk(
                 jTextField1.getText().trim(),
                 jTextField2.getText().trim(),
@@ -320,17 +277,7 @@ public class PanelProduk extends javax.swing.JPanel {
                 Integer.parseInt(jTextField4.getText().trim())
             );
 
-            String sql = "UPDATE produk SET nama_produk = ?, harga_beli = ?, harga_jual = ?, stok = ? WHERE id_produk = ?";
-            try (Connection c = DatabaseConnection.getConnection();
-                 PreparedStatement ps = c.prepareStatement(sql)) {
-                ps.setString(1, p.getNamaProduk());
-                ps.setBigDecimal(2, p.getHargaBeli());
-                ps.setBigDecimal(3, p.getHargaJual());
-                ps.setInt(4, p.getStok());
-                ps.setString(5, p.getIdProduk());
-                ps.executeUpdate();
-            }
-
+            produkModel.ubah(p);
             JOptionPane.showMessageDialog(this, "Data produk berhasil diubah!");
             loadData();
             bersihkanForm();
@@ -339,29 +286,29 @@ public class PanelProduk extends javax.swing.JPanel {
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Gagal mengubah: " + e.getMessage());
         }
+
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-                                      
-        String id = jTextField1.getText().trim();
+ String id = jTextField1.getText().trim();
         if (id.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Pilih produk di tabel terlebih dahulu!");
             return;
         }
         int konfirmasi = JOptionPane.showConfirmDialog(this, "Hapus produk " + id + "?", "Konfirmasi", JOptionPane.YES_NO_OPTION);
         if (konfirmasi == JOptionPane.YES_OPTION) {
-            try (Connection c = DatabaseConnection.getConnection();
-                 PreparedStatement ps = c.prepareStatement("DELETE FROM produk WHERE id_produk = ?")) {
-                ps.setString(1, id);
-                ps.executeUpdate();
+            try {
+                produkModel.hapus(id);
                 JOptionPane.showMessageDialog(this, "Produk berhasil dihapus!");
                 loadData();
                 bersihkanForm();
             } catch (SQLException e) {
                 JOptionPane.showMessageDialog(this, "Gagal menghapus: " + e.getMessage());
             }
+        }
+    
     }//GEN-LAST:event_jButton3ActionPerformed
-    }
+
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
             bersihkanForm();
     }//GEN-LAST:event_jButton4ActionPerformed
@@ -375,7 +322,7 @@ public class PanelProduk extends javax.swing.JPanel {
     }//GEN-LAST:event_jTextField1ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-   try {
+ try {
             Produk p = new Produk(
                 jTextField1.getText().trim(),
                 jTextField2.getText().trim(),
@@ -384,17 +331,7 @@ public class PanelProduk extends javax.swing.JPanel {
                 Integer.parseInt(jTextField4.getText().trim())
             );
 
-            String sql = "INSERT INTO produk (id_produk, nama_produk, harga_beli, harga_jual, stok) VALUES (?, ?, ?, ?, ?)";
-            try (Connection c = DatabaseConnection.getConnection();
-                 PreparedStatement ps = c.prepareStatement(sql)) {
-                ps.setString(1, p.getIdProduk());
-                ps.setString(2, p.getNamaProduk());
-                ps.setBigDecimal(3, p.getHargaBeli());
-                ps.setBigDecimal(4, p.getHargaJual());
-                ps.setInt(5, p.getStok());
-                ps.executeUpdate();
-            }
-
+            produkModel.simpan(p);
             JOptionPane.showMessageDialog(this, "Produk berhasil disimpan!");
             loadData();
             bersihkanForm();

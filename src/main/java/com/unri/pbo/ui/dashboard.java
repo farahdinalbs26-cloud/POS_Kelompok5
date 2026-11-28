@@ -120,8 +120,6 @@ private javax.swing.JScrollPane buatScroll(java.awt.Component comp) {
         jMenu1 = new javax.swing.JMenu();
         menuPelanggan = new javax.swing.JMenuItem();
         menuSupllier = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
-        jMenu4 = new javax.swing.JMenu();
         jMenu3 = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -313,12 +311,6 @@ private javax.swing.JScrollPane buatScroll(java.awt.Component comp) {
 
         jMenuBar2.add(jMenu1);
 
-        jMenu2.setText("Transaksi");
-        jMenuBar2.add(jMenu2);
-
-        jMenu4.setText("Bantuan");
-        jMenuBar2.add(jMenu4);
-
         jMenu3.setText("Laporan ");
         jMenuBar2.add(jMenu3);
 
@@ -360,8 +352,8 @@ tampilkanPanel(panelRestock, null);
     }//GEN-LAST:event_btnRestockActionPerformed
 
     private void btnPenjualanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPenjualanActionPerformed
-   tampilkanPanel(panelPenjualan, btnPenjualan);
- 
+  panelPenjualan.refreshData();
+        tampilkanPanel(panelPenjualan, btnPenjualan);
     }//GEN-LAST:event_btnPenjualanActionPerformed
 
     private void btnKasirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnKasirActionPerformed
@@ -437,9 +429,7 @@ tampilkanPanel(panelSupplier, null);
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
-    private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;

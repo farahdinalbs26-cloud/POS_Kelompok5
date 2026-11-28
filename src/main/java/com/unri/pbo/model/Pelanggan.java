@@ -1,101 +1,141 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.unri.pbo.model;
 
 import com.unri.pbo.config.DatabaseConnection;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.table.DefaultTableModel;
 
 public class Pelanggan {
-    private String kodePelanggan;
-    private String namaInstansi;
-    private String alamat;
-    private String noTelepon;
-    private String email;
 
-    // Getter & Setter (sesuaikan jika memakai extends dari ProjectPOS.jar)
-    public String getKodePelanggan() { return kodePelanggan; }
-    public void setKodePelanggan(String kodePelanggan) { this.kodePelanggan = kodePelanggan; }
-    public String getNamaInstansi() { return namaInstansi; }
-    public void setNamaInstansi(String namaInstansi) { this.namaInstansi = namaInstansi; }
-    public String getAlamat() { return alamat; }
-    public void setAlamat(String alamat) { this.alamat = alamat; }
-    public String getNoTelepon() { return noTelepon; }
-    public void setNoTelepon(String noTelepon) { this.noTelepon = noTelepon; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    // Ambil semua data pelanggan -> bungkus ke objek com.unri.pbo.Pelanggan (JAR dosen)
+    public List<com.unri.pbo.Pelanggan> getAllPelanggan() throws SQLException {
+        List<com.unri.pbo.Pelanggan> list = new ArrayList<>();
+        String sql = "SELECT * FROM pelanggan ORDER BY kode_pelanggan ASC";
 
-    // 1. Tampil Data ke JTable
-    public DefaultTableModel getTabelPelanggan() {
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            while (rs.next()) {
+                String id = rs.getString("kode_pelanggan");
+                String nama = rs.getString("nama_pelanggan");
+                String alamat = adaKolom(rs, "alamat") && rs.getString("alamat") != null ? rs.getString("alamat") : "-";
+                String telp = adaKolom(rs, "no_telepon") && rs.getString("no_telepon") != null ? rs.getString("no_telepon") : "-";
+                String jenis = adaKolom(rs, "jenis_pelanggan") && rs.getString("jenis_pelanggan") != null ? rs.getString("jenis_pelanggan") : "Instansi";
+
+                list.add(new com.unri.pbo.Pelanggan(id, nama, alamat, telp, jenis));
+            }
+        }
+        return list;
+    }
+
+    // Data untuk JTable di PanelPelanggan (termasuk kolom No & Email)
+    public DefaultTableModel getTabelPelanggan() throws SQLException {
         DefaultTableModel model = new DefaultTableModel(
-            new Object[]{"No", "Kode Pelanggan", "Nama Pelanggan", "Alamat", "No. Telepon", "Email"}, 0
-        );
+            new String[]{"No", "Kode Pelanggan", "Nama Pelanggan", "Alamat", "No. Telepon", "Email"}, 0
+        ) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
         String sql = "SELECT * FROM pelanggan ORDER BY kode_pelanggan ASC";
         try (Connection conn = DatabaseConnection.getConnection();
              Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
+
             int no = 1;
             while (rs.next()) {
+                String id = rs.getString("kode_pelanggan");
+                String nama = rs.getString("nama_pelanggan");
+                String alamat = adaKolom(rs, "alamat") && rs.getString("alamat") != null ? rs.getString("alamat") : "-";
+                String telp = adaKolom(rs, "no_telepon") && rs.getString("no_telepon") != null ? rs.getString("no_telepon") : "-";
+                String jenis = adaKolom(rs, "jenis_pelanggan") && rs.getString("jenis_pelanggan") != null ? rs.getString("jenis_pelanggan") : "Instansi";
+                String email = adaKolom(rs, "email") && rs.getString("email") != null ? rs.getString("email") : "-";
+
+                // Validasi lewat objek JAR dosen
+                com.unri.pbo.Pelanggan p = new com.unri.pbo.Pelanggan(id, nama, alamat, telp, jenis);
                 model.addRow(new Object[]{
                     no++,
-                    rs.getString("kode_pelanggan"),
-                    rs.getString("nama_pelanggan"), // sesuaikan nama kolom di MySQL
-                    rs.getString("alamat"),
-                    rs.getString("no_telepon"),
-                    rs.getString("email")
+                    p.getId(),
+                    p.getNama(),
+                    p.getAlamat(),
+                    p.getNoTelepon(),
+                    email
                 });
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
         return model;
     }
 
-    // 2. Simpan Data Baru
-    public boolean simpan() {
+    public String generateKodePelanggan() {
+        String sql = "SELECT kode_pelanggan FROM pelanggan ORDER BY kode_pelanggan DESC LIMIT 1";
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            if (rs.next() && rs.getString("kode_pelanggan") != null) {
+                String kodeTerakhir = rs.getString("kode_pelanggan");
+                int angka = Integer.parseInt(kodeTerakhir.replaceAll("[^0-9]", "")) + 1;
+                return String.format("P%03d", angka);
+            }
+        } catch (Exception ignored) {
+        }
+        return "P001";
+    }
+
+    // Simpan pelanggan baru dari objek JAR dosen ke MySQL
+    public void simpan(com.unri.pbo.Pelanggan p, String email) throws SQLException {
         String sql = "INSERT INTO pelanggan (kode_pelanggan, nama_pelanggan, alamat, no_telepon, email) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, kodePelanggan);
-            ps.setString(2, namaInstansi);
-            ps.setString(3, alamat);
-            ps.setString(4, noTelepon);
+
+            ps.setString(1, p.getId());
+            ps.setString(2, p.getNama());
+            ps.setString(3, p.getAlamat());
+            ps.setString(4, p.getNoTelepon());
             ps.setString(5, email);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            ps.executeUpdate();
         }
     }
 
-    // 3. Ubah Data
-    public boolean ubah() {
-        String sql = "UPDATE pelanggan SET nama_pelanggan=?, alamat=?, no_telepon=?, email=? WHERE kode_pelanggan=?";
+    // Ubah data pelanggan dari objek JAR dosen ke MySQL
+    public void ubah(com.unri.pbo.Pelanggan p, String email) throws SQLException {
+        String sql = "UPDATE pelanggan SET nama_pelanggan = ?, alamat = ?, no_telepon = ?, email = ? WHERE kode_pelanggan = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, namaInstansi);
-            ps.setString(2, alamat);
-            ps.setString(3, noTelepon);
+
+            ps.setString(1, p.getNama());
+            ps.setString(2, p.getAlamat());
+            ps.setString(3, p.getNoTelepon());
             ps.setString(4, email);
-            ps.setString(5, kodePelanggan);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            ps.setString(5, p.getId());
+            ps.executeUpdate();
         }
     }
 
-    // 4. Hapus Data
-    public boolean hapus(String kode) {
-        String sql = "DELETE FROM pelanggan WHERE kode_pelanggan=?";
+    // Hapus pelanggan berdasarkan kode_pelanggan
+    public void hapus(String kodePelanggan) throws SQLException {
+        String sql = "DELETE FROM pelanggan WHERE kode_pelanggan = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, kode);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
+
+            ps.setString(1, kodePelanggan);
+            ps.executeUpdate();
+        }
+    }
+
+    private boolean adaKolom(ResultSet rs, String namaKolom) {
+        try {
+            rs.findColumn(namaKolom);
+            return true;
+        } catch (Exception e) {
             return false;
         }
     }

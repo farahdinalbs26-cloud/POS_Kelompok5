@@ -3,43 +3,49 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
 package com.unri.pbo.ui;
-import com.unri.pbo.config.DatabaseConnection;
+
+import com.unri.pbo.DetailPenjualan;
+import com.unri.pbo.Pelanggan;
+import com.unri.pbo.Penjualan;
+import com.unri.pbo.Produk;
+import java.awt.Color;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.table.DefaultTableModel;
-/**
- *
- * @author Strgirlezz
- */
+
 public class PanelKasir extends javax.swing.JPanel {
 
-   private DefaultTableModel modelKeranjang;
-    private String kodeProdukTerpilih = "";
-    private String namaProdukTerpilih = "";
-    private int stokProdukTerpilih = 0;
+  private Penjualan transaksiAktif;
+    private final com.unri.pbo.model.Penjualan penjualanModel = new com.unri.pbo.model.Penjualan();
+    private final List<Produk> daftarProduk = new ArrayList<>();
+    private final List<Pelanggan> daftarPelanggan = new ArrayList<>();
+    private DefaultTableModel modelKeranjang;
 
     public PanelKasir() {
         initComponents();
         setupAwal();
         loadDataDropdown();
-        isiTanggalOtomatis();
-        generateNoFaktur();
+        mulaiTransaksiBaru();
     }
 
     private void setupAwal() {
-        jTextField5.setEditable(false); // No. Faktur otomatis
-        jTextField7.setEditable(false); // Harga satuan otomatis
-        jTextField3.setEditable(false); // Kembalian otomatis
-        jTextField4.setEditable(false); // Total otomatis
+        jTextField5.setEditable(false); // No. Faktur
+        jTextField2.setEditable(false); // Tanggal
+        jTextField7.setEditable(false); // Harga satuan
+        jTextField3.setEditable(false); // Kembalian
+        jTextField4.setEditable(false); // Total
         jTextField4.setFont(new java.awt.Font("Segoe UI", java.awt.Font.BOLD, 22));
         jTextField4.setText("0");
+        jTextField1.setForeground(Color.BLACK);
 
         jSpinner1.setModel(new SpinnerNumberModel(1, 1, 10000, 1));
 
@@ -53,68 +59,64 @@ public class PanelKasir extends javax.swing.JPanel {
         };
         jTable2.setModel(modelKeranjang);
 
-        // Otomatis isi harga saat produk di jComboBox1 dipilih
-        jComboBox1.addActionListener(e -> pilihProdukDariCombo());
+        jButton3.addActionListener(e -> editItemKeranjang());
 
-        // Hitung kembalian real-time saat mengetik Nominal Bayar
+        jComboBox3.addActionListener(e -> {
+            String noFaktur = jTextField5.getText().trim();
+            int idx = jComboBox3.getSelectedIndex();
+            if (!noFaktur.isEmpty() && idx >= 0 && idx < daftarPelanggan.size() &&
+                (transaksiAktif == null || transaksiAktif.getDaftarDetail().isEmpty())) {
+                transaksiAktif = new Penjualan(noFaktur, daftarPelanggan.get(idx));
+            }
+        });
+
         jTextField1.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
                 hitungKembalian();
             }
         });
+
         jTextField1.addActionListener(e -> simpanTransaksi());
     }
 
-    private void isiTanggalOtomatis() {
-        java.time.LocalDate today = java.time.LocalDate.now();
-        jTextField2.setText(today.toString());
-        jTextField2.setEditable(false);
-    }
+    private void mulaiTransaksiBaru() {
+        jTextField2.setText(java.time.LocalDate.now().toString());
+        String noFaktur = penjualanModel.generateNoFaktur();
+        jTextField5.setText(noFaktur);
 
-    private void generateNoFaktur() {
-        String sql = "SELECT id_penjualan FROM penjualan ORDER BY id_penjualan DESC LIMIT 1";
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+        Pelanggan pelAwal = daftarPelanggan.isEmpty()
+                ? new Pelanggan("UMUM", "Pelanggan Umum", "-", "-", "Reguler")
+                : daftarPelanggan.get(Math.max(0, jComboBox3.getSelectedIndex()));
 
-            if (rs.next() && rs.getString("id_penjualan") != null) {
-                String lastId = rs.getString("id_penjualan");
-                int num = Integer.parseInt(lastId.replaceAll("[^0-9]", "")) + 1;
-                jTextField5.setText(String.format("TRX%03d", num));
-            } else {
-                jTextField5.setText("TRX001");
-            }
-        } catch (Exception e) {
-            jTextField5.setText("TRX001");
-        }
+        transaksiAktif = new Penjualan(noFaktur, pelAwal);
+
+        jTextField1.setText("");
+        jTextField3.setText("0");
+        jSpinner1.setValue(1);
+        refreshTabelKeranjang();
     }
 
     public void loadDataDropdown() {
         jComboBox1.removeAllItems();
         jComboBox3.removeAllItems();
         jComboBox4.removeAllItems();
+        daftarProduk.clear();
+        daftarPelanggan.clear();
 
-        // 1. Isi dropdown Nama Kasir
         jComboBox4.addItem("Admin");
         jComboBox4.addItem("Kasir 1");
         jComboBox4.addItem("Kasir 2");
 
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement st = conn.createStatement()) {
-
-            // 2. Ambil data Produk ke jComboBox1
-            try (ResultSet rsProd = st.executeQuery("SELECT id_produk, nama_produk FROM produk ORDER BY id_produk ASC")) {
-                while (rsProd.next()) {
-                    jComboBox1.addItem(rsProd.getString("id_produk") + " - " + rsProd.getString("nama_produk"));
-                }
+        try {
+            for (Produk p : penjualanModel.getAllProduk()) {
+                daftarProduk.add(p);
+                jComboBox1.addItem(p.getIdProduk() + " - " + p.getNamaProduk());
             }
 
-            // 3. Ambil data Instansi dari tabel pelanggan ke jComboBox3
-            try (ResultSet rsPel = st.executeQuery("SELECT kode_pelanggan, nama_pelanggan FROM pelanggan ORDER BY kode_pelanggan ASC")) {
-                while (rsPel.next()) {
-                    jComboBox3.addItem(rsPel.getString("kode_pelanggan") + " - " + rsPel.getString("nama_pelanggan"));
-                }
+            for (Pelanggan pel : penjualanModel.getAllPelanggan()) {
+                daftarPelanggan.add(pel);
+                jComboBox3.addItem(pel.getId() + " - " + pel.getNama()); // <-- TARUH DI SINI
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Gagal memuat dropdown: " + e.getMessage());
@@ -124,69 +126,122 @@ public class PanelKasir extends javax.swing.JPanel {
     }
 
     private void pilihProdukDariCombo() {
-        if (jComboBox1.getSelectedItem() == null) return;
-        String item = jComboBox1.getSelectedItem().toString();
-        String idProduk = item.split(" - ")[0].trim();
-
-        String sql = "SELECT id_produk, nama_produk, harga_jual, stok FROM produk WHERE id_produk = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, idProduk);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    kodeProdukTerpilih = rs.getString("id_produk");
-                    namaProdukTerpilih = rs.getString("nama_produk");
-                    stokProdukTerpilih = rs.getInt("stok");
-                    jTextField7.setText(String.format("%.0f", rs.getDouble("harga_jual")));
-                    jSpinner1.setValue(1);
-                }
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error memuat detail produk: " + e.getMessage());
+        int idx = jComboBox1.getSelectedIndex();
+        if (idx >= 0 && idx < daftarProduk.size()) {
+            Produk p = daftarProduk.get(idx);
+            jTextField7.setText(p.getHargaJual().toPlainString());
+            jSpinner1.setValue(1);
         }
     }
 
-    private void hitungTotal() {
-        double total = 0;
-        for (int i = 0; i < modelKeranjang.getRowCount(); i++) {
-            total += Double.parseDouble(modelKeranjang.getValueAt(i, 4).toString());
+    private void tambahItemKeKeranjang() {
+        int idx = jComboBox1.getSelectedIndex();
+        if (idx < 0 || idx >= daftarProduk.size()) {
+            JOptionPane.showMessageDialog(this, "Pilih produk terlebih dahulu!");
+            return;
         }
-        jTextField4.setText(String.format("%.0f", total));
+
+        Produk produkDipilih = daftarProduk.get(idx);
+        int qty = (Integer) jSpinner1.getValue();
+        String namaKasir = jComboBox4.getSelectedItem() != null ? jComboBox4.getSelectedItem().toString() : "Kasir";
+
+        try {
+            transaksiAktif.tambahPenjualan(produkDipilih, qty, namaKasir, "Tambah item kasir");
+            refreshTabelKeranjang();
+            jSpinner1.setValue(1);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Peringatan Stok", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    private void editItemKeranjang() {
+        int baris = jTable2.getSelectedRow();
+        if (baris == -1) {
+            JOptionPane.showMessageDialog(this, "Pilih dulu baris barang di keranjang yang ingin diedit!");
+            return;
+        }
+
+        DetailPenjualan detail = transaksiAktif.getDaftarDetail().get(baris);
+        String input = JOptionPane.showInputDialog(this, "Masukkan jumlah (Qty) baru untuk " + detail.getProduk().getNamaProduk() + ":", detail.getJumlah());
+        if (input == null) return;
+
+        try {
+            int qtyBaru = Integer.parseInt(input.trim());
+            String namaKasir = jComboBox4.getSelectedItem() != null ? jComboBox4.getSelectedItem().toString() : "Kasir";
+
+            transaksiAktif.ubahDetail(detail.getProduk().getIdProduk(), qtyBaru, namaKasir, "Edit qty kasir");
+            refreshTabelKeranjang();
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Qty harus berupa angka!");
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Gagal Edit", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    private void hapusItemKeranjang() {
+        int baris = jTable2.getSelectedRow();
+        if (baris == -1) {
+            JOptionPane.showMessageDialog(this, "Pilih dulu baris barang di keranjang yang ingin dihapus!");
+            return;
+        }
+
+        DetailPenjualan detail = transaksiAktif.getDaftarDetail().get(baris);
+        String namaKasir = jComboBox4.getSelectedItem() != null ? jComboBox4.getSelectedItem().toString() : "Kasir";
+
+        try {
+            transaksiAktif.hapusDetail(detail.getProduk().getIdProduk(), namaKasir, "Hapus item kasir");
+            refreshTabelKeranjang();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal menghapus item: " + ex.getMessage());
+        }
+    }
+
+    private void clearKeranjang() {
+        if (transaksiAktif != null && !transaksiAktif.getDaftarDetail().isEmpty()) {
+            String namaKasir = jComboBox4.getSelectedItem() != null ? jComboBox4.getSelectedItem().toString() : "Kasir";
+            List<DetailPenjualan> salinan = new ArrayList<>(transaksiAktif.getDaftarDetail());
+            for (DetailPenjualan d : salinan) {
+                try {
+                    transaksiAktif.hapusDetail(d.getProduk().getIdProduk(), namaKasir, "Clear keranjang");
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        mulaiTransaksiBaru();
+    }
+
+    private void refreshTabelKeranjang() {
+        modelKeranjang.setRowCount(0);
+        if (transaksiAktif != null) {
+            for (DetailPenjualan d : transaksiAktif.getDaftarDetail()) {
+                modelKeranjang.addRow(new Object[]{
+                    d.getProduk().getIdProduk(),
+                    d.getProduk().getNamaProduk(),
+                    d.getHargaJual().toPlainString(),
+                    d.getJumlah(),
+                    d.getSubtotal().toPlainString()
+                });
+            }
+            jTextField4.setText(transaksiAktif.hitungTotal().toPlainString());
+        } else {
+            jTextField4.setText("0");
+        }
         hitungKembalian();
     }
 
     private void hitungKembalian() {
         try {
-            double total = Double.parseDouble(jTextField4.getText().trim());
-            double bayar = Double.parseDouble(jTextField1.getText().trim());
-            double kembalian = bayar - total;
-            jTextField3.setText(String.format("%.0f", kembalian));
-        } catch (NumberFormatException e) {
+            BigDecimal total = transaksiAktif != null ? transaksiAktif.hitungTotal() : BigDecimal.ZERO;
+            BigDecimal bayar = new BigDecimal(jTextField1.getText().trim());
+            BigDecimal kembalian = bayar.subtract(total);
+            jTextField3.setText(kembalian.toPlainString());
+        } catch (Exception e) {
             jTextField3.setText("0");
         }
     }
 
-    private void resetInputProduk() {
-        if (jComboBox1.getItemCount() > 0) {
-            jComboBox1.setSelectedIndex(0);
-            pilihProdukDariCombo();
-        }
-        jSpinner1.setValue(1);
-    }
-
-    private void resetTransaksi() {
-        modelKeranjang.setRowCount(0);
-        jTextField4.setText("0");
-        jTextField1.setText("");
-        jTextField3.setText("0");
-        resetInputProduk();
-        isiTanggalOtomatis();
-        generateNoFaktur();
-    }
-
     private void simpanTransaksi() {
-        if (modelKeranjang.getRowCount() == 0) {
+        if (transaksiAktif == null || transaksiAktif.getDaftarDetail().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Keranjang masih kosong!");
             return;
         }
@@ -195,81 +250,90 @@ public class PanelKasir extends javax.swing.JPanel {
             return;
         }
 
-        double total = Double.parseDouble(jTextField4.getText().trim());
-        double bayar;
+        BigDecimal total = transaksiAktif.hitungTotal();
+        BigDecimal bayar;
         try {
-            bayar = Double.parseDouble(jTextField1.getText().trim());
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Masukkan Nominal Bayar yang valid!");
+            bayar = new BigDecimal(jTextField1.getText().trim());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Masukkan Nominal Bayar yang valid lalu tekan Enter!");
             jTextField1.requestFocus();
             return;
         }
 
-        if (bayar < total) {
+        if (bayar.compareTo(total) < 0) {
             JOptionPane.showMessageDialog(this, "Nominal bayar kurang dari total belanja!");
             jTextField1.requestFocus();
             return;
         }
 
-        String idPenjualan = jTextField5.getText().trim();
+        String namaKasir = jComboBox4.getSelectedItem() != null ? jComboBox4.getSelectedItem().toString() : "Kasir";
+        String idPenjualan = transaksiAktif.getIdPenjualan();
         String tanggal = jTextField2.getText().trim();
         String kodePelanggan = jComboBox3.getSelectedItem().toString().split(" - ")[0].trim();
 
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            conn.setAutoCommit(false);
+        try {
+            transaksiAktif.finalisasiTransaksi(namaKasir);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal finalisasi transaksi: " + ex.getMessage());
+            return;
+        }
 
-            // 1. Simpan ke tabel penjualan
-            String sqlPenjualan = "INSERT INTO penjualan (id_penjualan, tanggal, kode_pelanggan, total, status) VALUES (?, ?, ?, ?, 'Selesai')";
-            try (PreparedStatement psJual = conn.prepareStatement(sqlPenjualan)) {
-                psJual.setString(1, idPenjualan);
-                psJual.setString(2, tanggal);
-                psJual.setString(3, kodePelanggan);
-                psJual.setDouble(4, total);
-                psJual.executeUpdate();
-            }
+        try {
+            penjualanModel.simpanTransaksi(transaksiAktif, tanggal, kodePelanggan);
 
-            // 2. Simpan ke detail_penjualan & potong stok produk
-            String sqlDetail = "INSERT INTO detail_penjualan (id_penjualan, id_detail, id_produk, harga_jual, jumlah, subtotal) VALUES (?, ?, ?, ?, ?, ?)";
-            String sqlStok = "UPDATE produk SET stok = stok - ? WHERE id_produk = ?";
-
-            try (PreparedStatement psDetail = conn.prepareStatement(sqlDetail);
-                 PreparedStatement psStok = conn.prepareStatement(sqlStok)) {
-
-                for (int i = 0; i < modelKeranjang.getRowCount(); i++) {
-                    String idDetail = idPenjualan + "-" + (i + 1);
-                    String idProduk = modelKeranjang.getValueAt(i, 0).toString();
-                    double harga = Double.parseDouble(modelKeranjang.getValueAt(i, 2).toString());
-                    int qty = Integer.parseInt(modelKeranjang.getValueAt(i, 3).toString());
-                    double subtotal = Double.parseDouble(modelKeranjang.getValueAt(i, 4).toString());
-
-                    psDetail.setString(1, idPenjualan);
-                    psDetail.setString(2, idDetail);
-                    psDetail.setString(3, idProduk);
-                    psDetail.setDouble(4, harga);
-                    psDetail.setInt(5, qty);
-                    psDetail.setDouble(6, subtotal);
-                    psDetail.addBatch();
-
-                    psStok.setInt(1, qty);
-                    psStok.setString(2, idProduk);
-                    psStok.addBatch();
-                }
-                psDetail.executeBatch();
-                psStok.executeBatch();
-            }
-
-            conn.commit();
-            double kembalian = bayar - total;
-            JOptionPane.showMessageDialog(
+            BigDecimal kembalian = bayar.subtract(total);
+            int cetak = JOptionPane.showConfirmDialog(
                 this,
-                "Transaksi " + idPenjualan + " berhasil disimpan!\n" +
-                "Total: Rp " + String.format("%.0f", total) + "\n" +
-                "Bayar: Rp " + String.format("%.0f", bayar) + "\n" +
-                "Kembalian: Rp " + String.format("%.0f", kembalian)
+                "Transaksi " + idPenjualan + " berhasil!\n" +
+                "Total: Rp " + total.toPlainString() + "\n" +
+                "Bayar: Rp " + bayar.toPlainString() + "\n" +
+                "Kembalian: Rp " + kembalian.toPlainString() + "\n\n" +
+                "Cetak nota transaksi sekarang?",
+                "Transaksi Selesai",
+                JOptionPane.YES_NO_OPTION
             );
-            resetTransaksi();
+
+            if (cetak == JOptionPane.YES_OPTION) {
+                cetakNotaTransaksi(transaksiAktif);
+            }
+
+            loadDataDropdown();
+            mulaiTransaksiBaru();
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Gagal menyimpan transaksi: " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Gagal menyimpan transaksi ke database: " + e.getMessage());
+        }
+    }
+
+    private void cetakNotaTransaksi(Penjualan pj) {
+        PrintStream consoleAsli = System.out;
+        ByteArrayOutputStream penampungNota = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(penampungNota));
+        pj.cetakNota(); // Memanggil method cetakNota() dari JAR dosen
+        System.setOut(consoleAsli);
+
+        String teksNota = penampungNota.toString();
+
+        JTextArea areaStruk = new JTextArea(teksNota, 20, 42);
+        areaStruk.setFont(new java.awt.Font("Consolas", java.awt.Font.PLAIN, 12));
+        areaStruk.setEditable(false);
+
+        int pilihan = JOptionPane.showOptionDialog(
+            this,
+            new javax.swing.JScrollPane(areaStruk),
+            "Preview Nota - " + pj.getIdPenjualan(),
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            new Object[]{"Print Sekarang", "Tutup"},
+            "Print Sekarang"
+        );
+
+        if (pilihan == 0) {
+            try {
+                areaStruk.print();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Gagal mencetak nota: " + e.getMessage());
+            }
         }
     }
     /**
@@ -313,6 +377,7 @@ public class PanelKasir extends javax.swing.JPanel {
         jTextField3 = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
         jTextField4 = new javax.swing.JTextField();
+        jButton6 = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable2 = new javax.swing.JTable();
@@ -534,6 +599,13 @@ public class PanelKasir extends javax.swing.JPanel {
         jTextField4.setBackground(new java.awt.Color(0, 102, 51));
         jTextField4.setForeground(new java.awt.Color(255, 255, 255));
 
+        jButton6.setText("Cetak Nota");
+        jButton6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton6ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -543,13 +615,16 @@ public class PanelKasir extends javax.swing.JPanel {
                     .addComponent(jLabel5)
                     .addComponent(jLabel6))
                 .addGap(26, 26, 26)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
-                    .addComponent(jTextField3))
-                .addGap(72, 72, 72)
-                .addComponent(jLabel7)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButton6)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jTextField1, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                            .addComponent(jTextField3))
+                        .addGap(72, 72, 72)
+                        .addComponent(jLabel7)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(98, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
@@ -573,7 +648,8 @@ public class PanelKasir extends javax.swing.JPanel {
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel7))))
-                .addContainerGap(54, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
+                .addComponent(jButton6))
         );
 
         jLabel1.setFont(new java.awt.Font("Yu Gothic UI Semibold", 1, 14)); // NOI18N
@@ -614,13 +690,11 @@ public class PanelKasir extends javax.swing.JPanel {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addGap(19, 19, 19)
-                                .addComponent(jLabel13)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                .addComponent(jLabel13))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 440, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -654,85 +728,33 @@ public class PanelKasir extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-   simpanTransaksi(); 
+   tambahItemKeKeranjang();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-      pilihProdukDariCombo();
-        if (kodeProdukTerpilih.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Pilih produk terlebih dahulu!");
-            return;
-        }
+      tambahItemKeKeranjang();
 
-        int qty = (Integer) jSpinner1.getValue();
-        if (qty <= 0) {
-            JOptionPane.showMessageDialog(this, "Qty minimal 1!");
-            return;
-        }
-
-        double harga;
-        try {
-            harga = Double.parseDouble(jTextField7.getText().trim());
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Harga produk tidak valid!");
-            return;
-        }
-
-        // Jika produk sudah ada di keranjang, tambahkan Qty-nya
-        for (int i = 0; i < modelKeranjang.getRowCount(); i++) {
-            if (modelKeranjang.getValueAt(i, 0).toString().equals(kodeProdukTerpilih)) {
-                int qtyLama = Integer.parseInt(modelKeranjang.getValueAt(i, 3).toString());
-                int qtyBaru = qtyLama + qty;
-                if (qtyBaru > stokProdukTerpilih) {
-                    JOptionPane.showMessageDialog(this, "Stok tidak mencukupi! Sisa stok: " + stokProdukTerpilih);
-                    return;
-                }
-                modelKeranjang.setValueAt(qtyBaru, i, 3);
-                modelKeranjang.setValueAt(String.format("%.0f", harga * qtyBaru), i, 4);
-                hitungTotal();
-                resetInputProduk();
-                return;
-            }
-        }
-
-        // Cek ketersediaan stok
-        if (qty > stokProdukTerpilih) {
-            JOptionPane.showMessageDialog(this, "Stok tidak mencukupi! Sisa stok: " + stokProdukTerpilih);
-            return;
-        }
-
-        // Masukkan baris baru ke tabel keranjang & hitung Total otomatis
-        double subtotal = harga * qty;
-        modelKeranjang.addRow(new Object[]{
-            kodeProdukTerpilih,
-            namaProdukTerpilih,
-            String.format("%.0f", harga),
-            qty,
-            String.format("%.0f", subtotal)
-        });
-
-        hitungTotal();
-        resetInputProduk();
-    
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-    int row = jTable2.getSelectedRow();
-        if (row != -1) {
-            modelKeranjang.removeRow(row);
-            hitungTotal();
-        } else {
-            JOptionPane.showMessageDialog(this, "Pilih item pada keranjang yang ingin dihapus!");
-        }
+hapusItemKeranjang(); 
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-    resetTransaksi();
+   clearKeranjang();
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
-        // TODO add your handling code here:
+   pilihProdukDariCombo();
     }//GEN-LAST:event_jComboBox1ActionPerformed
+
+    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+    if (transaksiAktif == null || transaksiAktif.getDaftarDetail().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Belum ada item di keranjang untuk dicetak!");
+            return;
+        }
+        cetakNotaTransaksi(transaksiAktif);
+    }//GEN-LAST:event_jButton6ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -741,6 +763,7 @@ public class PanelKasir extends javax.swing.JPanel {
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
     private javax.swing.JButton jButton5;
+    private javax.swing.JButton jButton6;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JComboBox<String> jComboBox3;
     private javax.swing.JComboBox<String> jComboBox4;

@@ -3,14 +3,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
 package com.unri.pbo.ui;
-import com.unri.pbo.config.DatabaseConnection;
+import com.unri.pbo.model.RiwayatTransaksi;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
@@ -18,7 +15,9 @@ import javax.swing.table.DefaultTableModel;
 
 public class PanelRiwayatTransaksi extends javax.swing.JPanel {
 
-  public PanelRiwayatTransaksi() {
+ private final RiwayatTransaksi riwayatModel = new RiwayatTransaksi();
+
+    public PanelRiwayatTransaksi() {
         initComponents();
         setupEvents();
         loadDataRiwayat();
@@ -44,44 +43,13 @@ public class PanelRiwayatTransaksi extends javax.swing.JPanel {
         });
     }
 
-    public void loadDataRiwayat() {
-       DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+    public final void loadDataRiwayat() {
+        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         model.setRowCount(0);
 
-        String keyword = "%" + jTextField1.getText().trim() + "%";
-
-        String sql = "SELECT * FROM (" +
-                     "  SELECT id_penjualan AS kode, tanggal, 'Penjualan' AS jenis, " +
-                     "         kode_pelanggan AS keterangan, total " +
-                     "  FROM penjualan " +
-                     "  UNION ALL " +
-                     "  SELECT id_pembelian AS kode, tanggal, 'Pembelian' AS jenis, " +
-                     "         id_supplier AS keterangan, total " +
-                     "  FROM pembelian " +
-                     ") AS gabungan " +
-                     "WHERE kode LIKE ? OR tanggal LIKE ? OR jenis LIKE ? OR keterangan LIKE ? " +
-                     "ORDER BY tanggal DESC, kode DESC";
-
-        try (Connection c = DatabaseConnection.getConnection();
-             PreparedStatement ps = c.prepareStatement(sql)) {
-
-            ps.setString(1, keyword);
-            ps.setString(2, keyword);
-            ps.setString(3, keyword);
-            ps.setString(4, keyword);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                int no = 1;
-                while (rs.next()) {
-                    model.addRow(new Object[]{
-                        no++,
-                        rs.getString("kode"),
-                        rs.getString("tanggal"),
-                        rs.getString("jenis"),
-                        rs.getString("keterangan"),
-                        String.format("%.0f", rs.getDouble("total"))
-                    });
-                }
+        try {
+            for (Object[] baris : riwayatModel.getDaftarRiwayat(jTextField1.getText())) {
+                model.addRow(baris);
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Gagal memuat riwayat: " + e.getMessage());

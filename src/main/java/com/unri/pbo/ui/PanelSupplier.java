@@ -3,12 +3,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
  */
 package com.unri.pbo.ui;
-import com.unri.pbo.config.DatabaseConnection;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import com.unri.pbo.Supplier;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 /**
@@ -17,10 +15,10 @@ import javax.swing.table.DefaultTableModel;
  */
 public class PanelSupplier extends javax.swing.JPanel {
 
-    /**
-     * Creates new form PanelSupplier
-     */
-public PanelSupplier() {
+    private final com.unri.pbo.model.Supplier supplierModel = new com.unri.pbo.model.Supplier();
+    private final List<Supplier> daftarSupplier = new ArrayList<>();
+
+    public PanelSupplier() {
         initComponents();
         jTextField1.setEditable(false);
         jTextField1.setBackground(java.awt.Color.WHITE);
@@ -32,18 +30,19 @@ public PanelSupplier() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 int row = jTable1.getSelectedRow();
-                if (row != -1) {
-                    jTextField1.setText(jTable1.getValueAt(row, 0).toString());
-                    jTextField2.setText(jTable1.getValueAt(row, 1).toString());
-                    jTextField3.setText(jTable1.getValueAt(row, 2) != null ? jTable1.getValueAt(row, 2).toString() : "");
-                    jTextField4.setText(jTable1.getValueAt(row, 3) != null ? jTable1.getValueAt(row, 3).toString() : "");
+                if (row != -1 && row < daftarSupplier.size()) {
+                    Supplier sup = daftarSupplier.get(row);
+                    jTextField1.setText(sup.getId());
+                    jTextField2.setText(sup.getNamaPerusahaan());
+                    jTextField3.setText(sup.getNoTelepon());
+                    jTextField4.setText(sup.getAlamat());
                 }
             }
         });
     }
 
-    private void tampilData() {
-       DefaultTableModel model = new DefaultTableModel(
+    public void tampilData() {
+        DefaultTableModel model = new DefaultTableModel(
             new String[]{"ID Supplier", "Nama Perusahaan", "No.Telepon", "Alamat"}, 0
         ) {
             @Override
@@ -52,17 +51,15 @@ public PanelSupplier() {
             }
         };
 
-        String sql = "SELECT id_supplier, nama_perusahaan, no_telepon, alamat FROM supplier ORDER BY id_supplier ASC";
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-
-            while (rs.next()) {
+        try {
+            daftarSupplier.clear();
+            daftarSupplier.addAll(supplierModel.getAllSupplier());
+            for (Supplier sup : daftarSupplier) {
                 model.addRow(new Object[]{
-                    rs.getString("id_supplier"),
-                    rs.getString("nama_perusahaan"),
-                    rs.getString("no_telepon"),
-                    rs.getString("alamat")
+                    sup.getId(),
+                    sup.getNamaPerusahaan(),
+                    sup.getNoTelepon(),
+                    sup.getAlamat()
                 });
             }
             jTable1.setModel(model);
@@ -72,21 +69,7 @@ public PanelSupplier() {
     }
 
     private void generateIdSupplier() {
-        String sql = "SELECT id_supplier FROM supplier ORDER BY id_supplier DESC LIMIT 1";
-        try (Connection conn = DatabaseConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-
-            if (rs.next() && rs.getString("id_supplier") != null) {
-                String kodeTerakhir = rs.getString("id_supplier");
-                int angka = Integer.parseInt(kodeTerakhir.replaceAll("[^0-9]", "")) + 1;
-                jTextField1.setText(String.format("SUP%03d", angka));
-            } else {
-                jTextField1.setText("SUP001");
-            }
-        } catch (Exception e) {
-            jTextField1.setText("SUP001");
-        }
+        jTextField1.setText(supplierModel.generateIdSupplier());
     }
 
     private void bersihkanForm() {
@@ -107,17 +90,18 @@ public PanelSupplier() {
     }
 
     private void simpanDataBaru() {
-       String sql = "INSERT INTO supplier (id_supplier, nama, nama_perusahaan, no_telepon, alamat) VALUES (?, ?, ?, ?, ?)";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        if (!validasiInput()) return;
 
-            ps.setString(1, jTextField1.getText().trim());
-            ps.setString(2, jTextField2.getText().trim()); // isi kolom nama sama dengan nama perusahaan
-            ps.setString(3, jTextField2.getText().trim()); // nama_perusahaan
-            ps.setString(4, jTextField3.getText().trim()); // no_telepon
-            ps.setString(5, jTextField4.getText().trim()); // alamat
+        String id = jTextField1.getText().trim();
+        String namaPerusahaan = jTextField2.getText().trim();
+        String noTelp = jTextField3.getText().trim();
+        String alamat = jTextField4.getText().trim();
 
-            ps.executeUpdate();
+        // Urutan konstruktor JAR dosen: (id, nama, alamat, noTelepon, namaPerusahaan)
+        Supplier supBaru = new Supplier(id, namaPerusahaan, alamat, noTelp, namaPerusahaan);
+
+        try {
+            supplierModel.simpan(supBaru);
             JOptionPane.showMessageDialog(this, "Data supplier berhasil disimpan!");
             tampilData();
             bersihkanForm();
@@ -127,6 +111,56 @@ public PanelSupplier() {
             } else {
                 JOptionPane.showMessageDialog(this, "Gagal menyimpan: " + e.getMessage());
             }
+        }
+    }
+
+    private void ubahDataSupplier() {
+        if (jTable1.getSelectedRow() == -1) {
+            JOptionPane.showMessageDialog(this, "Pilih dulu data supplier pada tabel yang ingin diubah!");
+            return;
+        }
+        if (!validasiInput()) return;
+
+        String id = jTextField1.getText().trim();
+        String namaPerusahaan = jTextField2.getText().trim();
+        String noTelp = jTextField3.getText().trim();
+        String alamat = jTextField4.getText().trim();
+
+        Supplier supEdit = new Supplier(id, namaPerusahaan, alamat, noTelp, namaPerusahaan);
+
+        try {
+            supplierModel.ubah(supEdit);
+            JOptionPane.showMessageDialog(this, "Data supplier berhasil diubah!");
+            tampilData();
+            bersihkanForm();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Gagal mengubah data: " + e.getMessage());
+        }
+    }
+
+    private void hapusDataSupplier() {
+        int row = jTable1.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Pilih data supplier pada tabel terlebih dahulu!");
+            return;
+        }
+
+        Supplier supHapus = daftarSupplier.get(row);
+        int konfirmasi = JOptionPane.showConfirmDialog(
+            this,
+            "Hapus supplier \"" + supHapus.getNamaPerusahaan() + "\" (" + supHapus.getId() + ")?",
+            "Konfirmasi Hapus",
+            JOptionPane.YES_NO_OPTION
+        );
+        if (konfirmasi != JOptionPane.YES_OPTION) return;
+
+        try {
+            supplierModel.hapus(supHapus.getId());
+            JOptionPane.showMessageDialog(this, "Data supplier berhasil dihapus!");
+            tampilData();
+            bersihkanForm();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Gagal menghapus: " + e.getMessage());
         }
     }
         
@@ -306,20 +340,23 @@ public PanelSupplier() {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 461, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabel1))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(161, 161, 161)
+                        .addComponent(jLabel1)))
                 .addContainerGap(24, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -332,58 +369,11 @@ public PanelSupplier() {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-      String sql = "INSERT INTO supplier (id_supplier, nama_perusahaan, no_telepon, alamat) VALUES (?, ?, ?, ?)";
-try (Connection conn = DatabaseConnection.getConnection();
-     PreparedStatement ps = conn.prepareStatement(sql)) {
-
-    ps.setString(1, jTextField1.getText().trim());
-    ps.setString(2, jTextField2.getText().trim());
-    ps.setString(3, jTextField3.getText().trim());
-    ps.setString(4, jTextField4.getText().trim());
-
-    ps.executeUpdate();
-    JOptionPane.showMessageDialog(this, "Data supplier berhasil disimpan!");
-    tampilData();
-    bersihkanForm();
-} catch (SQLException e) {
-    if (e.getErrorCode() == 1062) {
-        JOptionPane.showMessageDialog(this, "ID Supplier sudah terdaftar!");
-    } else {
-        JOptionPane.showMessageDialog(this, "Gagal menyimpan: " + e.getMessage());
-    }
-}
+ ubahDataSupplier();
     }//GEN-LAST:event_jButton5ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-    int row = jTable1.getSelectedRow();
-        if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Pilih data supplier pada tabel terlebih dahulu!");
-            return;
-        }
-
-        String id = jTable1.getValueAt(row, 0).toString();
-        String nama = jTable1.getValueAt(row, 1).toString();
-
-        int konfirmasi = JOptionPane.showConfirmDialog(
-            this,
-            "Hapus supplier \"" + nama + "\" (" + id + ")?",
-            "Konfirmasi Hapus",
-            JOptionPane.YES_NO_OPTION
-        );
-        if (konfirmasi != JOptionPane.YES_OPTION) return;
-
-        String sql = "DELETE FROM supplier WHERE kode_supplier = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, id);
-            ps.executeUpdate();
-            JOptionPane.showMessageDialog(this, "Data supplier berhasil dihapus!");
-            tampilData();
-            bersihkanForm();
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Gagal menghapus: " + e.getMessage());
-        }
+   hapusDataSupplier();
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
