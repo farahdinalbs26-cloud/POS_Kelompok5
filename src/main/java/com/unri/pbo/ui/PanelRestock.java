@@ -173,6 +173,11 @@ public class PanelRestock extends javax.swing.JPanel {
         });
 
         jButton3.setText("Hapus");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -242,7 +247,7 @@ public class PanelRestock extends javax.swing.JPanel {
                 {null, null, null, null, null}
             },
             new String [] {
-                "No", "Nama Produk", "Jumlaj", "Supplier", "Harga"
+                "No", "Nama Produk", "Jumlah", "Supplier", "Harga"
             }
         ));
         jScrollPane1.setViewportView(jTable1);
@@ -291,7 +296,7 @@ public class PanelRestock extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(8, 8, 8)
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(275, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -370,10 +375,9 @@ public class PanelRestock extends javax.swing.JPanel {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
     bersihkan();
-    }                                        
+    }//GEN-LAST:event_jButton2ActionPerformed
 
-    // Tombol Hapus -> Hapus baris terpilih & kurangi kembali stok produk
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {                                         
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         int row = jTable1.getSelectedRow();
         if (row == -1) {
             JOptionPane.showMessageDialog(this, "Pilih data pada tabel yang ingin dihapus!");
@@ -408,7 +412,7 @@ public class PanelRestock extends javax.swing.JPanel {
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Gagal menghapus: " + e.getMessage());
         }
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_jButton3ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

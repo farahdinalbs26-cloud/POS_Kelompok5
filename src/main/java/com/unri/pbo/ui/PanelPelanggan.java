@@ -94,10 +94,14 @@ public class PanelPelanggan extends javax.swing.JPanel {
         jScrollPane3 = new javax.swing.JScrollPane();
         tblPelanggan = new javax.swing.JTable();
 
+        setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
         lblJudul.setFont(new java.awt.Font("Yu Gothic UI Semibold", 1, 12)); // NOI18N
         lblJudul.setText("Data Pelanggan");
+        add(lblJudul, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 16, -1, -1));
 
         lblKode.setText("Kode Pelanggan");
+        add(lblKode, new org.netbeans.lib.awtextra.AbsoluteConstraints(15, 44, -1, -1));
 
         txtKode.setEditable(false);
         txtKode.setBackground(new java.awt.Color(255, 255, 255));
@@ -106,38 +110,47 @@ public class PanelPelanggan extends javax.swing.JPanel {
                 txtKodeActionPerformed(evt);
             }
         });
+        add(txtKode, new org.netbeans.lib.awtextra.AbsoluteConstraints(132, 44, 196, -1));
 
         lblNama.setText("Instansi");
+        add(lblNama, new org.netbeans.lib.awtextra.AbsoluteConstraints(15, 78, -1, -1));
 
         txtNama.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtNamaActionPerformed(evt);
             }
         });
+        add(txtNama, new org.netbeans.lib.awtextra.AbsoluteConstraints(132, 78, 196, -1));
 
         txtTelepon.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtTeleponActionPerformed(evt);
             }
         });
+        add(txtTelepon, new org.netbeans.lib.awtextra.AbsoluteConstraints(534, 44, 168, -1));
 
         txtEmail.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtEmailActionPerformed(evt);
             }
         });
+        add(txtEmail, new org.netbeans.lib.awtextra.AbsoluteConstraints(534, 86, 168, -1));
 
         lblTelepon.setText("No. Telepon");
+        add(lblTelepon, new org.netbeans.lib.awtextra.AbsoluteConstraints(421, 47, -1, -1));
 
         lblEmail.setText("Email");
+        add(lblEmail, new org.netbeans.lib.awtextra.AbsoluteConstraints(421, 81, 43, -1));
 
         lblAlamat.setText("Alamat Instansi");
+        add(lblAlamat, new org.netbeans.lib.awtextra.AbsoluteConstraints(15, 117, -1, -1));
 
         txtAlamat.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtAlamatActionPerformed(evt);
             }
         });
+        add(txtAlamat, new org.netbeans.lib.awtextra.AbsoluteConstraints(132, 114, 196, -1));
 
         btnSimpan.setBackground(new java.awt.Color(211, 222, 229));
         btnSimpan.setText("Simpan");
@@ -146,6 +159,7 @@ public class PanelPelanggan extends javax.swing.JPanel {
                 btnSimpanActionPerformed(evt);
             }
         });
+        add(btnSimpan, new org.netbeans.lib.awtextra.AbsoluteConstraints(15, 167, -1, -1));
 
         btnUbah.setBackground(new java.awt.Color(211, 222, 229));
         btnUbah.setText("Ubah");
@@ -154,6 +168,7 @@ public class PanelPelanggan extends javax.swing.JPanel {
                 btnUbahActionPerformed(evt);
             }
         });
+        add(btnUbah, new org.netbeans.lib.awtextra.AbsoluteConstraints(151, 167, -1, -1));
 
         btnHapus.setBackground(new java.awt.Color(211, 222, 229));
         btnHapus.setText("Hapus");
@@ -162,6 +177,7 @@ public class PanelPelanggan extends javax.swing.JPanel {
                 btnHapusActionPerformed(evt);
             }
         });
+        add(btnHapus, new org.netbeans.lib.awtextra.AbsoluteConstraints(282, 167, -1, -1));
 
         btnBersihkan.setBackground(new java.awt.Color(211, 222, 229));
         btnBersihkan.setText("Bersihkan");
@@ -170,6 +186,7 @@ public class PanelPelanggan extends javax.swing.JPanel {
                 btnBersihkanActionPerformed(evt);
             }
         });
+        add(btnBersihkan, new org.netbeans.lib.awtextra.AbsoluteConstraints(421, 167, -1, -1));
 
         tblPelanggan.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -188,103 +205,20 @@ public class PanelPelanggan extends javax.swing.JPanel {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(17, Short.MAX_VALUE)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 511, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(44, 44, 44))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 711, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(32, 32, 32)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(36, Short.MAX_VALUE)
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addGap(20, 20, 20))
         );
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(10, 10, 10)
-                .addComponent(lblJudul)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(15, 15, 15)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnSimpan)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(136, 136, 136)
-                                .addComponent(btnUbah)))
-                        .addGap(59, 59, 59)
-                        .addComponent(btnHapus))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblNama)
-                            .addComponent(lblKode)
-                            .addComponent(lblAlamat))
-                        .addGap(31, 31, 31)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(txtKode, javax.swing.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
-                            .addComponent(txtNama)
-                            .addComponent(txtAlamat))))
-                .addGap(67, 67, 67)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblTelepon)
-                    .addComponent(btnBersihkan)
-                    .addComponent(lblEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(33, 33, 33)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtTelepon, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 487, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(16, 16, 16)
-                .addComponent(lblJudul)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtTelepon, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblKode))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(lblNama))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(20, 20, 20)
-                                .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(lblAlamat)
-                            .addComponent(txtAlamat, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(31, 31, 31)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(btnSimpan)
-                            .addComponent(btnUbah)
-                            .addComponent(btnHapus)
-                            .addComponent(btnBersihkan)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(txtKode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblTelepon))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(txtNama, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblEmail))))
-                .addGap(35, 35, 35)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(233, Short.MAX_VALUE))
-        );
+        add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 225, -1, -1));
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSimpanActionPerformed
